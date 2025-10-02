@@ -22,4 +22,4 @@ je kunt makkelijk Web API’s integreren en er bestaan kant-en-klare hooks en li
 FIREBASE : voor de login en gebruikersbeheer, gebruikersdata (playlists, likes, geschidenis) opslaan, app online zetten gaan we meerdere onderdelen van firebase gebruiken o.a firestore, fire cloud messaging, fire clod storage,...)
 
 4. Te doen na validatie van project
-Sprint 1 : - firebase authenticatie implementeren, UI beginnen ( home, login, player, (library : te zien)), routes implementeren(backend)
+Sprint 1 : -schetsen maken, mockups, trello bord, taken verdelen, firebase authenticatie implementeren, UI beginnen ( home, login, player, (library : te zien)), routes implementeren(backend)
