@@ -13,7 +13,14 @@ TIJD: 2H
 - Ik heb de login screens gemaakt met navigation (zonder te letten op css gewoon de implementatie met alles wat op het scherm voorlopig moet)
 
 Dinsdag 7-2-2025
+TIJD: 3H
 - documentatie over firebase gelezen
 - en firebase gebruikt voor de login en create van user
 - volgende stap is om firestore ook te implementeren voor de extra informatie wanneer een user inlogt.
+- Opnieuw begonnen met react alles verplaatsen van react-native naar react! was niet zo moeilijk fundamenteel leek het erg op elkaar.
+
+woensdag 8-2-2025
+TIJD: 2H
+- opzoeken van potentiele API die we kunen gebruiken.
+- 
 
