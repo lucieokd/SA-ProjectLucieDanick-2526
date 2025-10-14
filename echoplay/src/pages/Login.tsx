@@ -1,13 +1,43 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase/firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
+  const navigate = useNavigate(); // ✅ router hook
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email, "Password:", password);
+
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("Login successful!");
+      navigate("/home"); // ✅ redirect na succesvolle login
+    } catch (err: any) {
+      console.error("Login failed:", err.message);
+      switch (err.code) {
+        case "auth/user-not-found":
+          setError("No account found for this email.");
+          break;
+        case "auth/wrong-password":
+          setError("Incorrect password.");
+          break;
+        case "auth/invalid-email":
+          setError("Invalid email format.");
+          break;
+        default:
+          setError("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
@@ -51,6 +81,10 @@ const Login: React.FC = () => {
             />
           </div>
 
+          {error && (
+            <p className="text-danger text-center fw-semibold">{error}</p>
+          )}
+
           <button
             type="submit"
             className="btn btn-lg rounded-pill w-100 fw-semibold mb-3"
@@ -64,21 +98,27 @@ const Login: React.FC = () => {
           </button>
 
           <div className="text-center">
-            <a
-              href="#"
-              className="text-decoration-none"
+            <button
+              type="button"
+              className="btn btn-link text-decoration-none"
               style={{ color: "#6c2bd9" }}
+              onClick={() => navigate("/reset-password")} // ✅ link naar wachtwoord reset
             >
               Forgot your password?
-            </a>
+            </button>
           </div>
         </form>
 
         <p className="text-center mt-4 mb-0 text-muted">
           Don’t have an account?{" "}
-          <a href="#" className="fw-semibold" style={{ color: "#6c2bd9" }}>
+          <button
+            type="button"
+            className="btn btn-link fw-semibold p-0"
+            style={{ color: "#6c2bd9" }}
+            onClick={() => navigate("/signup")}
+          >
             Sign Up
-          </a>
+          </button>
         </p>
       </div>
     </div>
