@@ -5,7 +5,7 @@ import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
-  const navigate = useNavigate(); // ✅ router hook
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful!");
-      navigate("/home"); // ✅ redirect na succesvolle login
+      navigate("/home");
     } catch (err: any) {
       console.error("Login failed:", err.message);
       switch (err.code) {
@@ -102,7 +102,7 @@ const Login: React.FC = () => {
               type="button"
               className="btn btn-link text-decoration-none"
               style={{ color: "#6c2bd9" }}
-              onClick={() => navigate("/reset-password")} // ✅ link naar wachtwoord reset
+              onClick={() => navigate("/reset-password")}
             >
               Forgot your password?
             </button>
