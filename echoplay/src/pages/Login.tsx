@@ -102,9 +102,9 @@ const Login: React.FC = () => {
               type="button"
               className="btn btn-link text-decoration-none"
               style={{ color: "#6c2bd9" }}
-              onClick={() => navigate("/reset-password")}
+              onClick={() => navigate("/requestcode")}
             >
-              Forgot your password?
+              Login with code
             </button>
           </div>
         </form>
