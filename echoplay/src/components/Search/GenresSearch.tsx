@@ -45,7 +45,7 @@ const GenreSearch = () => {
 
     };
 
-    const Genre = "Drake"; // Example genre, this can be dynamic based on props or state
+    const Genre = "Example Genre";
     return (
     <div>
         <form onSubmit={handleSubmit} className="d-flex flex-row gap-2 flex-wrap">
