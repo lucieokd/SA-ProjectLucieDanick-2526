@@ -1,47 +1,53 @@
-const CACHE_NAME = "echoplay-cache-v1";
+const CACHE_NAME = "echoplay-cache-v2";
+
+// Cache de belangrijkste statische bestanden
 const urlsToCache = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/favicon.ico",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png"
+  "/assets/logo.png", 
+  "/assets/cover.jpg", 
 ];
 
-// Install event: cache belangrijke bestanden
+// Installatie van de Service Worker
 self.addEventListener("install", (event) => {
   console.log("Service Worker installing...");
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) =>
+      // probeer alle bestanden te cachen, maar negeer fouten
+      Promise.allSettled(urlsToCache.map((url) => cache.add(url).catch(() => {})))
+    )
   );
-  self.skipWaiting(); // activeer nieuwe SW direct
+  self.skipWaiting();
 });
 
-// Activate event: oude caches opruimen
+// Activatie: oude caches verwijderen
 self.addEventListener("activate", (event) => {
   console.log("Service Worker activating...");
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames.map((name) => {
-          if (name !== CACHE_NAME) return caches.delete(name);
-        })
-      )
+    caches.keys().then((names) =>
+      Promise.all(names.map((name) => name !== CACHE_NAME && caches.delete(name)))
     )
   );
-  self.clients.claim(); // neem direct controle over pagina's
+  self.clients.claim();
 });
 
-// Fetch event: serve cached files of fallback naar index.html (SPA)
+// Fetch event: probeer eerst uit cache, anders netwerk
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return; // alleen GET requests
-
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
-
-      // Probeer netwerk, fallback naar index.html bij failure
-      return fetch(event.request).catch(() => caches.match("/index.html"));
+      return fetch(event.request)
+        .then((networkResponse) => {
+          return networkResponse;
+        })
+        .catch(() => {
+          // fallback voor navigatie naar index.html
+          if (event.request.mode === "navigate") {
+            return caches.match("/index.html");
+          }
+        });
     })
   );
 });
+
