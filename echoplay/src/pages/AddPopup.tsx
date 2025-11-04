@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 interface AddPopupProps {
@@ -7,7 +8,14 @@ interface AddPopupProps {
 }
 
 const AddPopup: React.FC<AddPopupProps> = ({ show, onClose }) => {
+  const navigate = useNavigate();
+
   if (!show) return null;
+
+  const handleAddSong = () => {
+    onClose(); // sluit eerst de popup
+    navigate("/upload"); // navigeer naar UploadSongPage
+  };
 
   return (
     <div
@@ -38,7 +46,10 @@ const AddPopup: React.FC<AddPopupProps> = ({ show, onClose }) => {
         </div>
 
         <div className="d-grid gap-2">
-          <button className="custom-btn d-flex align-items-center gap-2 py-2">
+          <button
+            className="custom-btn d-flex align-items-center gap-2 py-2"
+            onClick={handleAddSong}
+          >
             <i className="bi bi-music-note"></i> Add Song
           </button>
           <button className="custom-btn d-flex align-items-center gap-2 py-2">

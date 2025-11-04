@@ -8,6 +8,7 @@ import Signup from "./pages/SignUp";
 import RequestCode from "./pages/RequestCode";
 import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
+import UploadSongPage from "./pages/UploadSongPage";
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
           <Route path="/library" element={<Library />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
-
+          <Route path="/upload" element={<UploadSongPage />} />
         </Route>
       </Routes>
     </Router>
