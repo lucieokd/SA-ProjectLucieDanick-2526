@@ -8,50 +8,156 @@ export async function ITunesFetch(artist: string, limit: number = 20, country: s
     return await response.json();
 }
 
-export async function getPreviewUrlFromITunes(trackName: string, artistName: string): Promise<string | null> {
-  try {
-    // Zoek in iTunes op basis van track naam en artist naam
-    const searchTerm = `${trackName} ${artistName}`;
-    const response = await fetch(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=5`
-    );
-
-    if (!response.ok) {
-      console.error('iTunes API error:', response.status);
-      return null;
-    }
-
-    const data = await response.json();
+export async function getTracksFromITunes(artists: string[] = [], genres: string[] = [], limit: number = 150) {
+  if (artists.length === 0) {
+    throw new Error('Geen artiesten opgegeven voor iTunes search');
+  }
+  
+  const allTracks: any[] = [];
+  const tracksPerQuery = 50;
+  
+  // Helper functie om iTunes API aan te roepen via CORS proxy
+  const fetchFromITunes = async (searchTerm: string): Promise<any | null> => {
+    const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=${tracksPerQuery}`;
     
-    if (data.results && data.results.length > 0) {
-      // Zoek de beste match (vergelijk track naam en artist naam)
-      const bestMatch = data.results.find((result: any) => {
-        const resultTrackName = result.trackName?.toLowerCase() || '';
-        const resultArtistName = result.artistName?.toLowerCase() || '';
-        const searchTrackName = trackName.toLowerCase();
-        const searchArtistName = artistName.toLowerCase();
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(itunesUrl)}`,
+      `https://corsproxy.io/?${encodeURIComponent(itunesUrl)}`,
+      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(itunesUrl)}`
+    ];
+    
+    for (const proxyUrl of proxies) {
+      try {
+        const response = await fetch(proxyUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
         
-        return (
-          resultTrackName.includes(searchTrackName) || 
-          searchTrackName.includes(resultTrackName)
-        ) && (
-          resultArtistName.includes(searchArtistName) ||
-          searchArtistName.includes(resultArtistName)
-        );
-      }) || data.results[0]; // Neem eerste resultaat als fallback
-      
-      // iTunes geeft previewUrl in de response
-      if (bestMatch.previewUrl) {
-        console.log(`Preview URL gevonden voor "${trackName}" van "${artistName}"`);
-        return bestMatch.previewUrl;
+        if (!response.ok) continue;
+        
+        const text = await response.text();
+        if (!text || !text.trim()) continue;
+        
+        try {
+          const data = JSON.parse(text);
+          if (data && typeof data === 'object' && data.results) {
+            return data;
+          }
+        } catch {
+          continue;
+        }
+      } catch {
+        continue;
       }
     }
     
-    console.log(`Geen preview URL gevonden voor "${trackName}" van "${artistName}"`);
+    return null;
+  };
+  
+  // Helper functie om iTunes resultaten te converteren naar Spotify-achtig format
+  const convertToTrackFormat = (result: any) => ({
+    id: result.trackId?.toString() || Math.random().toString(),
+    name: result.trackName || 'Unknown',
+    preview_url: result.previewUrl || null,
+    album: {
+      name: result.collectionName || 'Unknown Album',
+      images: result.artworkUrl100 ? [{ url: result.artworkUrl100.replace('100x100', '640x640') }] : []
+    },
+    artists: [{ name: result.artistName || 'Unknown Artist' }]
+  });
+  
+  // Helper functie om tracks te filteren en converteren
+  const processTracks = (results: any[], artistFilter: string) => {
+    const filtered = results.filter((result: any) => {
+      const hasPreview = result.previewUrl && result.previewUrl !== null && result.previewUrl !== '';
+      const matchesArtist = result.artistName?.toLowerCase().includes(artistFilter.toLowerCase());
+      return hasPreview && matchesArtist;
+    });
+    
+    return filtered.map(convertToTrackFormat);
+  };
+  
+  try {
+    // Zoek per artiest
+    for (const artist of artists) {
+      if (allTracks.length >= limit) break;
+      
+      try {
+        const data = await fetchFromITunes(artist);
+        if (!data?.results?.length) continue;
+        
+        const convertedTracks = processTracks(data.results, artist);
+        allTracks.push(...convertedTracks);
+      } catch (err) {
+        console.error(`Error fetching tracks for artist "${artist}":`, err);
+      }
+    }
+    
+    // Verwijder duplicates op basis van track ID
+    const uniqueTracks = Array.from(
+      new Map(allTracks.map((track: any) => [track.id, track])).values()
+    );
+    
+    // Shuffle voor FYP-achtige ervaring
+    for (let i = uniqueTracks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [uniqueTracks[i], uniqueTracks[j]] = [uniqueTracks[j], uniqueTracks[i]];
+    }
+    
+    return uniqueTracks.slice(0, limit);
+  } catch (error: any) {
+    console.error('Error in getTracksFromITunes:', error);
+    throw new Error(`Error fetching tracks from iTunes: ${error.message || error}`);
+  }
+}
+
+export async function getPreviewUrlFromITunes(trackName: string, artistName: string): Promise<string | null> {
+  try {
+    const searchTerm = `${trackName} ${artistName}`;
+    const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=5`;
+    
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(itunesUrl)}`,
+      `https://corsproxy.io/?${encodeURIComponent(itunesUrl)}`,
+      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(itunesUrl)}`
+    ];
+    
+    for (const proxyUrl of proxies) {
+      try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) continue;
+        
+        const text = await response.text();
+        if (!text || !text.trim()) continue;
+        
+        const data = JSON.parse(text);
+        
+        if (!data?.results?.length) continue;
+        
+        const searchTrackName = trackName.toLowerCase();
+        const searchArtistName = artistName.toLowerCase();
+        
+        const bestMatch = data.results.find((result: any) => {
+          const resultTrackName = result.trackName?.toLowerCase() || '';
+          const resultArtistName = result.artistName?.toLowerCase() || '';
+          
+          return (
+            (resultTrackName.includes(searchTrackName) || searchTrackName.includes(resultTrackName)) &&
+            (resultArtistName.includes(searchArtistName) || searchArtistName.includes(resultArtistName))
+          );
+        }) || data.results[0];
+        
+        if (bestMatch?.previewUrl) {
+          return bestMatch.previewUrl;
+        }
+      } catch {
+        continue;
+      }
+    }
+    
     return null;
   } catch (error) {
     console.error('Error fetching preview URL from iTunes:', error);
     return null;
   }
 }
-

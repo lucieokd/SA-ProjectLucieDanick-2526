@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getToken, getFypTracks } from '../../API/SpotifyCred';
-import { getPreviewUrlFromITunes } from '../../API/ITunesSearchServices';
+import { getTracksFromITunes } from '../../API/ITunesSearchServices';
 import LoadingSpinner from '../Spotify/LoadingSpinner';
 import Errormessage from '../Spotify/Errormessage';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
@@ -31,37 +31,22 @@ const SongPreview = () => {
         setLoading(true);
         setError(null);
         
-        const tokenData = await getToken();
-        console.log('Token obtained, fetching tracks...');
+        console.log('Fetching tracks directly from iTunes API...');
         
-        const tracksData = await getFypTracks(
-          tokenData.access_token, 
-          ['The Weeknd'], // Artiesten
-          ['pop'], // Genres
+        const tracksData = await getTracksFromITunes(
+          ['Ninho', 'Aya Nakamura', 'Damso', 'Angèle', 'Stromae', 'Booba', 'PNL'], 
+          [], 
+          150
         );
-        console.log('Tracks received:', tracksData?.length || 0);
+        console.log('iTunes tracks received:', tracksData?.length || 0);
+        console.log('Tracks met preview URLs:', tracksData.filter((t: any) => t.preview_url).length);
         
         if (!tracksData || tracksData.length === 0) {
-          setError('Geen tracks gevonden');
+          setError('Geen tracks gevonden via iTunes');
           return;
         }
         
-        console.log('Ophalen preview URLs via iTunes...');
-        const tracksWithPreview = await Promise.all(
-          tracksData.map(async (track: any) => {            
-            // Zoek preview_url via iTunes op basis van track naam en artist naam
-            const artistName = track.artists?.[0]?.name || '';
-            const previewUrl = await getPreviewUrlFromITunes(track.name, artistName);
-            
-            return {
-              ...track,
-              preview_url: previewUrl
-            };
-          })
-        );
-        
-        console.log('Tracks met preview URLs:', tracksWithPreview.filter((t: any) => t.preview_url).length);
-        setTracks(tracksWithPreview);
+        setTracks(tracksData);
       } catch (err: any) {
         setError(err.message || 'Er is een fout opgetreden');
         console.error('Error fetching tracks:', err);
@@ -200,7 +185,6 @@ const SongPreview = () => {
           />
         )}
 
-        {/* Cover afbeelding */}
         <div className="track-cover">
           {currentTrack.album.images.length > 0 ? (
             <img 
@@ -213,7 +197,6 @@ const SongPreview = () => {
           )}
         </div>
 
-        {/* Song informatie */}
         <div className="track-info">
           <h2 className="track-title">{currentTrack.name}</h2>
           <p className="track-artist">
@@ -222,7 +205,6 @@ const SongPreview = () => {
           <p className="track-album">{currentTrack.album.name}</p>
         </div>
 
-        {/* Play/Pause knop */}
         <div className="track-controls">
           {currentTrack.preview_url ? (
             <button 
@@ -230,7 +212,7 @@ const SongPreview = () => {
               className={`play-button ${isPlaying ? 'playing' : ''}`}
               type="button"
             >
-              {isPlaying ? '⏸️ Pauze' : '▶️ Afspelen'}
+              {isPlaying ? 'Pauze' : 'Afspelen'}
             </button>
           ) : (
             <p className="no-preview">Geen preview beschikbaar</p>
