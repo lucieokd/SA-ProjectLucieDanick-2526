@@ -6,11 +6,9 @@ import HeaderBar from "../components/HeaderBar";
 
 const MainLayout: React.FC = () => {
   return (
-    <div className="with-bottom-nav" style={{ paddingBottom: "128px" }}>
+    <div className="with-bottom-nav" style={{ paddingBottom: "128px", paddingTop: "56px" }}>
       {/*header bar bovenaan */}
-      <div className="w-100">
-        <HeaderBar />
-      </div>
+      <HeaderBar />
       
       {/*pagina-inhoud */}
       <Outlet />

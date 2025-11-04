@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
   AiFillHome,
@@ -8,8 +8,9 @@ import {
 } from "react-icons/ai";
 import { IoMusicalNotesSharp } from "react-icons/io5";
 
-const Navbar: React.FC = () => {
+const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const items = [
     {
