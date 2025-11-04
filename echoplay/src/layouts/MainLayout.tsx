@@ -1,23 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Player } from "../components/Player";
 import Navbar from "../components/Navbar";
-import HeaderBar from "../components/HeaderBar";
+import AddPopup from "../pages/AddPopup";
 
 const MainLayout: React.FC = () => {
+  const [showAddPopup, setShowAddPopup] = useState(false);
+
   return (
-    <div className="with-bottom-nav" style={{ paddingBottom: "128px", paddingTop: "56px" }}>
-      {/*header bar bovenaan */}
-      <HeaderBar />
-      
-      {/*pagina-inhoud */}
-      <Outlet />
+    <div className="d-flex flex-column min-vh-100 position-relative">
+      <div className="flex-grow-1">
+        <Outlet />
+      </div>
 
-      {/*player staat boven de navbar */}
-      <Player />
+      {/* Navbar met Add-knop */}
+      <Navbar onAddClick={() => setShowAddPopup(true)} />
 
-      {/*bottom navigation (mobile) - onder de player */}
-      <Navbar />
+      {/* Add-popup */}
+      <AddPopup show={showAddPopup} onClose={() => setShowAddPopup(false)} />
     </div>
   );
 };

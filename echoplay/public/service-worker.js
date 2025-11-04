@@ -1,12 +1,13 @@
 const CACHE_NAME = "echoplay-cache-v2";
 
-// Cache de belangrijkste statische bestanden
+// Statische bestanden om te cachen
 const urlsToCache = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/assets/logo.png", 
-  "/assets/cover.jpg", 
+  "/assets/logo.png",
+  "/assets/cover.jpg",
+  "icons/icon.png",
 ];
 
 // Installatie van de Service Worker
@@ -14,8 +15,9 @@ self.addEventListener("install", (event) => {
   console.log("Service Worker installing...");
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      // probeer alle bestanden te cachen, maar negeer fouten
-      Promise.allSettled(urlsToCache.map((url) => cache.add(url).catch(() => {})))
+      Promise.allSettled(
+        urlsToCache.map((url) => cache.add(url).catch(() => {}))
+      )
     )
   );
   self.skipWaiting();
@@ -32,22 +34,22 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch event: probeer eerst uit cache, anders netwerk
+// Fetch event: fallback voor navigatie + cache voor assets
 self.addEventListener("fetch", (event) => {
+  if (event.request.mode === "navigate") {
+    // Alle navigatievragen (zoals /home, /about) terug naar index.html
+    event.respondWith(
+      caches.match("/index.html").then((cachedResponse) => {
+        return cachedResponse || fetch(event.request).catch(() => caches.match("/index.html"));
+      })
+    );
+    return;
+  }
+
+  // Andere assets: eerst cache, dan netwerk
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request)
-        .then((networkResponse) => {
-          return networkResponse;
-        })
-        .catch(() => {
-          // fallback voor navigatie naar index.html
-          if (event.request.mode === "navigate") {
-            return caches.match("/index.html");
-          }
-        });
+      return cachedResponse || fetch(event.request);
     })
   );
 });
-
