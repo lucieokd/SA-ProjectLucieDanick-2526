@@ -18,37 +18,31 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
   const items = [
     { to: "/home", label: "Home", icon: <AiFillHome /> },
     { to: "/search", label: "Search", icon: <AiOutlineSearch /> },
-    { to: "", label: "Add", icon: <AiOutlinePlusCircle />, isAdd: true }, // 🔹 speciale knop
+    { to: "", label: "Add", icon: <AiOutlinePlusCircle />, isAdd: true },
     { to: "/library", label: "Playlist", icon: <IoMusicalNotesSharp /> },
   ];
 
   return (
     <nav
       className="fixed-bottom d-flex justify-content-around align-items-center bg-white border-top shadow-sm"
-      role="navigation"
-      aria-label="Bottom navigation"
-      style={{
-        height: "64px",
-        zIndex: 1000,
-        borderTop: "1px solid rgba(0, 0, 0, 0.08)",
-      }}
+      style={{ height: "64px", zIndex: 1000 }}
     >
       {items.map((it) => {
         const active = location.pathname === it.to;
 
-        // 🔹 de Add-knop is GEEN link
         if (it.isAdd) {
           return (
             <div
               key="add"
               onClick={onAddClick}
-              className="d-flex flex-column align-items-center justify-content-center text-decoration-none"
+              className="add-button d-flex flex-column align-items-center justify-content-center text-decoration-none"
               style={{
                 cursor: "pointer",
-                color: "#6c2bd9",
+                color: "#444",
                 gap: "4px",
                 fontSize: "12px",
                 fontWeight: 600,
+                transition: "color 0.2s ease",
               }}
             >
               <span style={{ fontSize: "24px" }}>{it.icon}</span>
@@ -57,7 +51,6 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
           );
         }
 
-        // 🔹 normale navigatie-items
         return (
           <Link
             key={it.to}
@@ -77,6 +70,15 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
           </Link>
         );
       })}
+
+      {/* Hover effect via CSS */}
+      <style>
+        {`
+          .add-button:hover {
+            color: #6c2bd9;
+          }
+        `}
+      </style>
     </nav>
   );
 };
