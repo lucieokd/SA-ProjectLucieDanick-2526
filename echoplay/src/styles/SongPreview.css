@@ -1,0 +1,239 @@
+/* Song Preview Component Styles */
+
+.fyp-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 200px);
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.track-item {
+  width: 65%;
+  max-width: 900px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  margin: 0 auto;
+}
+
+.track-cover {
+  margin-bottom: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  overflow: hidden;
+  animation: fadeInScale 0.5s ease;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.cover-image {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.cover-placeholder {
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  border-radius: 20px;
+}
+
+.track-info {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+  max-width: 600px;
+}
+
+.track-title {
+  margin: 0 0 10px 0;
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.track-artist {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  opacity: 0.9;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.track-album {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.7;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.track-controls {
+  margin-top: 20px;
+}
+
+.play-button {
+  padding: 15px 40px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.play-button:hover:not(:disabled) {
+  background: white;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.play-button:disabled {
+  background: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.play-button.playing {
+  background: #ff6b6b;
+  color: white;
+}
+
+.play-button.playing:hover:not(:disabled) {
+  background: #ff5252;
+}
+
+.no-preview {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.track-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #667eea;
+}
+
+.nav-button:hover:not(:disabled) {
+  background: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-button-left {
+  left: calc(17.5% - 80px);
+}
+
+.nav-button-right {
+  right: calc(17.5% - 80px);
+}
+
+@media (min-width: 1400px) {
+  .nav-button-left {
+    left: calc((100% - 900px) / 2 - 80px);
+  }
+
+  .nav-button-right {
+    right: calc((100% - 900px) / 2 - 80px);
+  }
+}
+
+@media (max-width: 768px) {
+  .fyp-container {
+    height: calc(100vh - 150px);
+  }
+
+  .track-item {
+    width: 90%;
+  }
+
+  .cover-image {
+    width: 250px;
+    height: 250px;
+  }
+
+  .cover-placeholder {
+    width: 250px;
+    height: 250px;
+  }
+
+  .track-title {
+    font-size: 24px;
+  }
+
+  .track-artist {
+    font-size: 18px;
+  }
+
+  .nav-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-button-left {
+    left: 5%;
+  }
+
+  .nav-button-right {
+    right: 5%;
+  }
+}
+
