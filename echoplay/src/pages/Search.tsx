@@ -6,6 +6,7 @@ import GenreSearch from "../components/Search/GenresSearch";
 const Search = () => {
   return (
     <div className="container-fluid px-4 py-5">
+      <GenreSearch />
       <Searchbar />
     </div>
   );

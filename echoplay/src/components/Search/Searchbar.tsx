@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { getToken, getTrackInfo } from "../../API/SpotifyCred";
+import { AiOutlineSearch } from "react-icons/ai";
 
 const Searchbar = () => {
   const [query, setQuery] = useState("");
@@ -46,21 +47,36 @@ const Searchbar = () => {
 
   return (
     <div className="p-4 max-w-lg mx-auto text-center">
-      <form onSubmit={handleSearch} className="flex items-center gap-2 mb-4">
-        <input
-          type="text"
-          placeholder="Search for a track..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
+      <form onSubmit={handleSearch} className="flex items-center mb-4" style={{ gap: '12px' }}>
+        <div className="relative w-full" style={{ flex: 1 }}>
+          <input
+            type="text"
+            placeholder="Zoek liedjes, artiesten..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full p-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            style={{ 
+              borderColor: '#6c2bd9',
+              backgroundColor: 'white',
+              color: 'black',
+              borderRadius: '15px',
+              marginRight: '5px',
+            }}
+          />
+          <button
           type="submit"
           disabled={loading}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+          className="px-4 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 transition-opacity flex items-center justify-center"
+          style={{ 
+            backgroundColor: '#6c2bd9', 
+            color: 'white',
+            border: '2px solid #6c2bd9',
+            borderRadius: '35px',
+          }}
         >
-          {loading ? "Zoeken..." : "Search"}
+          {loading ? "..." : <AiOutlineSearch size={20} />}
         </button>
+        </div>
       </form>
 
       {error && (
@@ -117,8 +133,8 @@ const Searchbar = () => {
           : !loading && (
               <p className="text-gray-500 py-8">
                 {query
-                  ? "Geen resultaten gevonden — probeer iets anders 🎶"
-                  : "Zoek naar songs om resultaten te zien 🎵"}
+                  ? "Geen resultaten gevonden — probeer iets anders"
+                  : "Zoek naar songs om resultaten te zien..."}
               </p>
             )}
 
