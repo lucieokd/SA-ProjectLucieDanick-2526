@@ -50,7 +50,7 @@ export async function getTrackInfo(access_token: string, trackId: string = "4cOd
   return await response.json();
 }
 
-export async function getFypTracks(access_token: string, artists: string[] = [], genres: string[] = [], limit: number = 250) {
+export async function getFypTracks(access_token: string, artists: string[] = [], genres: string[] = [], limit: number = 10) {
   // Maak meerdere aparte queries en combineer de resultaten (OR logica)
   const allQueries: string[] = [];
   
