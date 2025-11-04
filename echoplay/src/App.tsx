@@ -7,6 +7,7 @@ import MainLayout from "./layouts/MainLayout";
 import Signup from "./pages/SignUp";
 import RequestCode from "./pages/RequestCode";
 import VerifyCode from "./pages/VerifyCode";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/library" element={<Library />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/profile" element={<Profile />} />
+
         </Route>
       </Routes>
     </Router>
