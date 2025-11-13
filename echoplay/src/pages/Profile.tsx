@@ -1,8 +1,12 @@
+import UserInfo from "../components/Profile/UserInfo";
+
 const Profile = () => {
   return (
     <div>   
-        <h2>User Profile</h2>
-        <p>This is the profile page.</p>
+      <h1>Profile Page</h1>
+      <div>
+        <UserInfo />
+      </div>
     </div>
   );
 }   

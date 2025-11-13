@@ -135,7 +135,7 @@ const SongPreview = () => {
   const currentTrack = tracks[currentTrackIndex];
 
   return (
-    <div className="position-relative w-100 fyp-container">
+    <div className="position w-100 fyp-container">
       <button
         className="btn nav-button nav-button-left"
         onClick={goToPreviousTrack}

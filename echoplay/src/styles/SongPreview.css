@@ -1,13 +1,13 @@
 /* Song Preview Component Styles */
 
 .fyp-container {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 200px);
-  min-height: 500px;
+  height: 600px;
+  min-width: 750px;
+  width: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .track-item {
@@ -19,8 +19,6 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  position: relative;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   margin: 0 auto;
 }
