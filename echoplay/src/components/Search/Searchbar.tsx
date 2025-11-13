@@ -21,7 +21,7 @@ const Searchbar = () => {
       const response = await fetch(
         `https://api.spotify.com/v1/search?q=${encodeURIComponent(
           query
-        )}&type=track&limit=10`,
+        )}&type=track`,
         {
           method: "GET",
           headers: {

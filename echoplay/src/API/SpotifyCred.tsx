@@ -50,6 +50,19 @@ export async function getTrackInfo(access_token: string, trackId: string = "4cOd
   return await response.json();
 }
 
+export async function getArtistInfo(access_token: string, artistName: string) {
+  const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artistName)}&type=artist`, {
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer ' + access_token },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
 export async function getFypTracks(access_token: string, artists: string[] = [], genres: string[] = [], limit: number = 10) {
   // Maak meerdere aparte queries en combineer de resultaten (OR logica)
   const allQueries: string[] = [];
