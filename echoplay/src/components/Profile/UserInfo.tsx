@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { FaMoon, FaSun } from "react-icons/fa";
 import { getToken, getArtistInfo } from "../../API/SpotifyCred";
 import { IoSearchCircle } from 'react-icons/io5';
+import { ThemeContext } from './theme-context';
 
 interface Artist {
   id: string;
@@ -19,11 +21,7 @@ const userinfo = () => {
     const [favourite_artists, setFavourite_artists] = useState<Artist[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-
-    const handleCredentialsChange = (e) => {
-        e.preventDefault();
-        //
-    };
+    const { theme, setTheme } = useContext(ThemeContext);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -79,10 +77,17 @@ const userinfo = () => {
         console.log("Artiest verwijderd uit favorieten:", artistId);
     }
 
-    const handleChangeMode = (e) => {
+    const handleChangeMode = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        console.log(`${newTheme === 'dark' ? 'Dark' : 'Light'} mode ingeschakeld`);
+    }
+
+    const handleCredentialsChange = (e) => {
         e.preventDefault();
         //
-    }
+    };
 
     // Cleanup timer bij unmount
     useEffect(() => {
@@ -110,9 +115,12 @@ const userinfo = () => {
                 </div>
                 <button type="submit" value="Verander credentials" />
             </form>
-            <form onChange={handleChangeMode}>
-                <input type="checkbox" value="Dark Mode" />
-            </form>
+            <div>
+                <label htmlFor="">Change Mode</label>
+                <button type="button" onClick={handleChangeMode}>
+                    {theme === 'dark' ? <FaSun /> : <FaMoon />}   
+                </button>
+            </div>
             <div>
                 <div>
                     <input type="search" placeholder='Zoek artiest...' 
@@ -140,21 +148,21 @@ const userinfo = () => {
                     </div>
                 )}
             </div>
-             {favourite_artists.length > 0 && (
-                    <div className="favourite-artists">
-                        <h3>Favoriete artiesten</h3>
-                        <p>aantal artiesten: {favourite_artists.length}</p>
-                        <ul>
-                            {favourite_artists.map((artist) => (
-                                <li key={artist.id}>
-                                    {artist.name}
-                                    <button onClick={() => handleVerwijderArtiest(artist.id)}>X</button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
+            <div>
+                <div className="favourite-artists">
+                    <h3>Favoriete artiesten</h3>
+                    <p>aantal artiesten: {favourite_artists.length}</p>
+                    <ul>
+                        {favourite_artists.map((artist) => (
+                            <li key={artist.id}>
+                                {artist.name}
+                                <button onClick={() => handleVerwijderArtiest(artist.id)}>X</button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+             
         </div>
     );
 }

@@ -24,8 +24,14 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
 
   return (
     <nav
-      className="fixed-bottom d-flex justify-content-around align-items-center bg-white border-top shadow-sm"
-      style={{ height: "64px", zIndex: 1000 }}
+      className="fixed-bottom d-flex justify-content-around align-items-center border-top shadow-sm"
+      style={{ 
+        height: "64px", 
+        zIndex: 1000,
+        backgroundColor: 'var(--color-header-footer)',
+        color: 'var(--color-text)',
+        transition: 'background-color 0.3s ease, color 0.3s ease'
+      }}
     >
       {items.map((it) => {
         const active = location.pathname === it.to;
@@ -38,7 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
               className="add-button d-flex flex-column align-items-center justify-content-center text-decoration-none"
               style={{
                 cursor: "pointer",
-                color: "#444",
+                color: "var(--color-text)",
                 gap: "4px",
                 fontSize: "12px",
                 fontWeight: 600,
@@ -62,7 +68,7 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
               gap: "4px",
               fontSize: "12px",
               fontWeight: active ? "600" : "400",
-              color: active ? "#6c2bd9" : undefined,
+              color: active ? "#6c2bd9" : "var(--color-text-muted)",
             }}
           >
             <span style={{ fontSize: "20px" }}>{it.icon}</span>

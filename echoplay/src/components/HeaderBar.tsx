@@ -28,8 +28,14 @@ const HeaderBar = () => {
   }
 
   return (
-  <nav className="fixed-top d-flex justify-content-between align-items-center border-bottom shadow-sm px-3 py-2 bg-white" style={{ zIndex: 1002, height: '56px' }}>
-    <h1 className="h4 fw-bold mb-0 text-dark">{getPageTitle()}</h1>
+  <nav className="fixed-top d-flex justify-content-between align-items-center border-bottom shadow-sm px-3 py-2" style={{ 
+    zIndex: 1002, 
+    height: '56px',
+    backgroundColor: 'var(--color-header-footer)',
+    color: 'var(--color-text)',
+    transition: 'background-color 0.3s ease, color 0.3s ease'
+  }}>
+    <h1 className="h4 fw-bold mb-0" style={{ color: 'var(--color-text)' }}>{getPageTitle()}</h1>
     <form onSubmit={handleProfileNaviagtion}>
        <button
       className="btn btn-link p-2 text-decoration-none rounded-circle"
