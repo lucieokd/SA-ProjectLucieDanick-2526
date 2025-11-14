@@ -12,6 +12,20 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Theme variabelen - Light mode (default) */
+  --color-header-footer: #fff;
+  --color-text: #000;
+  --color-background: #f8f8fa;
+  --color-text-muted: #6c757d;
+}
+
+/* Dark mode theme variabelen */
+.theme-dark {
+  --color-header-footer: #36394c;
+  --color-text: #eff2f7;
+  --color-background: #222736;
+  --color-text-muted: #adb5bd;
 }
 
 a {
@@ -30,10 +44,12 @@ html, body, #root {
 }
 
 body {
-  background-color: #f8f9fa; /* Bootstrap's bg-light */
+  background-color: var(--color-background);
+  color: var(--color-text);
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 
