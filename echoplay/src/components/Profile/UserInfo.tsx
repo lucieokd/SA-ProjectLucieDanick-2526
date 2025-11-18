@@ -23,60 +23,6 @@ const userinfo = () => {
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const { theme, setTheme } = useContext(ThemeContext);
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setSearchTerm(value);
-
-        if (debounceTimer.current) {
-            clearTimeout(debounceTimer.current);
-        }
-
-        if (value.trim() === '') {
-            setSearchResults([]);
-            return;
-        }
-
-        debounceTimer.current = setTimeout(async () => {
-            try {
-                setIsSearching(true);
-                const tokenData = await getToken();
-                const access_token = tokenData.access_token;
-                const data = await getArtistInfo(access_token, value);
-
-                if (data.artists && data.artists.items) {
-                    setSearchResults(data.artists.items);
-                    console.log("Zoekresultaten opgehaald:", data.artists.items);
-                } else {
-                    setSearchResults([]);
-                }
-            } catch (error) {
-                console.error("Fout bij het ophalen van artiestgegevens:", error);
-                setSearchResults([]);
-            } finally {
-                setIsSearching(false);
-            }
-        }, 500);
-    };
-
-    const handleAddArtist = (artist: Artist) => {
-        // .some() controleert of minstens één element in de array voldoet aan een bepaalde voorwaarde.
-        const isAlreadyAdded = favourite_artists.some(fav => fav.id === artist.id);
-        
-        if (!isAlreadyAdded) {
-            setFavourite_artists([...favourite_artists, artist]);
-            console.log("Artiest toegevoegd aan favorieten:", artist.name);
-        } else {
-            console.log("Artiest staat al in de favorieten lijst:", artist.name);
-        }
-    };
-
-    const handleVerwijderArtiest = (artistId: string) => {
-        //.filter() maakt een nieuwe array met alle elementen die voldoen aan een bepaalde voorwaarde.
-        const updatedArtists = favourite_artists.filter(artist => artist.id !== artistId);
-        setFavourite_artists(updatedArtists);
-        console.log("Artiest verwijderd uit favorieten:", artistId);
-    }
-
     const handleChangeMode = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         const newTheme = theme === 'light' ? 'dark' : 'light';

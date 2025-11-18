@@ -8,6 +8,16 @@ export async function ITunesFetch(artist: string, limit: number = 20, country: s
     return await response.json();
 }
 
+export async function ITunesFetchArtist(artist: string, limit: number = 1) {
+    const response = 
+    await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist)}&limit=${limit}`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch from iTunes API');
+    }   
+    return await response.json();
+}
+
 export async function getTracksFromITunes(artists: string[] = [], genres: string[] = [], limit: number = 150) {
   if (artists.length === 0) {
     throw new Error('Geen artiesten opgegeven voor iTunes search');

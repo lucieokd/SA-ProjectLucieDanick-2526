@@ -1,12 +1,68 @@
 import React, { useState } from "react";
-import { getToken, getTrackInfo } from "../../API/SpotifyCred";
+import { getToken, getTrackInfo, getArtistInfo } from "../../API/SpotifyCred";
+import { ITunesFetchArtist } from "../../API/ITunesSearchServices";
 import { AiOutlineSearch } from "react-icons/ai";
+import ErrorMessage from "../ErrorMessage";
+import { useNavigate } from "react-router-dom";
+
+
+interface Artist {
+  id: string;
+  name: string;
+  genres: Array<string>;
+  images: Array<{ url: string }>;
+  followers: {
+    total: number;
+  };
+  popularity: number;
+}
 
 const Searchbar = () => {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleArtistSearch = async (artistName: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const tokenData = await getToken();
+
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+          artistName
+        )}&type=artist`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + tokenData.access_token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Voor test: log de naam van de artiest in de console
+      console.log("Geselecteerde artiest:", artistName);
+      const data = await response.json();
+      const artistNameFromSpotify = data.artists.items[0]?.name || artistName;
+      
+      navigate(`/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`);
+    } catch (error) {
+      console.error("Fout bij het ophalen van artiestgegevens:", error);
+      setError('Er is een fout opgetreden bij het zoeken naar artiesten');
+      setSearchTerm('');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -46,7 +102,7 @@ const Searchbar = () => {
   };
 
   return (
-    <div className="p-4 max-w-lg mx-auto text-center">
+    <div className="">
       <form onSubmit={handleSearch} className="flex items-center mb-4" style={{ gap: '12px' }}>
         <div className="relative w-full" style={{ flex: 1 }}>
           <input
@@ -54,38 +110,17 @@ const Searchbar = () => {
             placeholder="Zoek liedjes, artiesten..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full p-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            style={{ 
-              borderColor: '#6c2bd9',
-              backgroundColor: 'white',
-              color: 'black',
-              borderRadius: '15px',
-              marginRight: '5px',
-            }}
           />
-          <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 transition-opacity flex items-center justify-center"
-          style={{ 
-            backgroundColor: '#6c2bd9', 
-            color: 'white',
-            border: '2px solid #6c2bd9',
-            borderRadius: '35px',
-          }}
-        >
-          {loading ? "..." : <AiOutlineSearch size={20} />}
-        </button>
+          <button type="submit" disabled={loading}>
+            {loading ? "..." : <AiOutlineSearch size={20} />}
+          </button>
         </div>
       </form>
 
       {error && (
-        <div className="text-red-500 mb-4 p-2 bg-red-50 rounded-lg">
-          {error}
-        </div>
+        <ErrorMessage text={error} />
       )}
 
-      {/* Track results */}
       <div className="space-y-4">
         {tracks.length > 0
           ? tracks.map((track) => (
@@ -108,26 +143,23 @@ const Searchbar = () => {
                       {track.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {track.artists.map((artist) => artist.name).join(", ")}
+                      {track.artists.map((artist, index) => (
+                        <span key={artist.id}>
+                          <span
+                            onClick={() => handleArtistSearch(artist.name)}
+                            className="cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+                          >
+                            {artist.name}
+                          </span>
+                          {index < track.artists.length - 1 && ", "}
+                        </span>
+                      ))}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {track.album.name}
                     </p>
                   </div>
                 </div>
-
-                {track.preview_url && (
-                  <audio controls className="w-full mt-2">
-                    <source src={track.preview_url} type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>
-                )}
-
-                {!track.preview_url && (
-                  <p className="text-xs text-gray-400 text-center mt-2">
-                    Geen preview beschikbaar
-                  </p>
-                )}
               </div>
             ))
           : !loading && (
@@ -137,7 +169,6 @@ const Searchbar = () => {
                   : "Zoek naar songs om resultaten te zien..."}
               </p>
             )}
-
         {loading && (
           <div className="text-gray-500 py-8">Zoeken naar "{query}"...</div>
         )}
