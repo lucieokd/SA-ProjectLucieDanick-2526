@@ -11,6 +11,7 @@ import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
 import UploadSongPage from "./pages/UploadSongPage";
 import { ThemeContext } from './components/Profile/theme-context';
+import ArtistInfo from "./pages/ArtistInfo";
 
 function App() {
   const [theme, setTheme] = useState<string>(() => {
@@ -47,6 +48,7 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/upload" element={<UploadSongPage />} />
+            <Route path="/Artistinfo" element={<ArtistInfo />} />
           </Route>
         </Routes>
       </Router>
