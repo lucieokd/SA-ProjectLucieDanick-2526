@@ -10,15 +10,16 @@ import RequestCode from "./pages/RequestCode";
 import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
 import UploadSongPage from "./pages/UploadSongPage";
-import { ThemeContext } from './components/Profile/theme-context';
+import CreatePlaylistPage from "./pages/CreatePlaylistPage";
+import { ThemeContext } from "./components/Profile/theme-context";
 import ArtistInfo from "./pages/ArtistInfo";
 
 function App() {
   const [theme, setTheme] = useState<string>(() => {
     // Laad theme preference uit localStorage bij initialisatie
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem("theme");
     console.log("Gelezen theme uit localStorage:", savedTheme);
-    const initialTheme = savedTheme || 'light';
+    const initialTheme = savedTheme || "light";
     // Voeg class direct toe bij initialisatie
     document.documentElement.className = `theme-${initialTheme}`;
     return initialTheme;
@@ -28,7 +29,7 @@ function App() {
   useEffect(() => {
     document.documentElement.className = `theme-${theme}`;
     // Sla theme preference op in localStorage
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   return (
@@ -48,7 +49,11 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/upload" element={<UploadSongPage />} />
+<<<<<<< HEAD
             <Route path="/Artistinfo" element={<ArtistInfo />} />
+=======
+            <Route path="/create-playlist" element={<CreatePlaylistPage />} />
+>>>>>>> main
           </Route>
         </Routes>
       </Router>

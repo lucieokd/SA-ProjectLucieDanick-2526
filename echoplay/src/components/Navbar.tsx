@@ -19,18 +19,18 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
     { to: "/home", label: "Home", icon: <AiFillHome /> },
     { to: "/search", label: "Search", icon: <AiOutlineSearch /> },
     { to: "", label: "Add", icon: <AiOutlinePlusCircle />, isAdd: true },
-    { to: "/library", label: "Playlist", icon: <IoMusicalNotesSharp /> },
+    { to: "/library", label: "Library", icon: <IoMusicalNotesSharp /> },
   ];
 
   return (
     <nav
       className="fixed-bottom d-flex justify-content-around align-items-center border-top shadow-sm"
-      style={{ 
-        height: "64px", 
+      style={{
+        height: "64px",
         zIndex: 1000,
-        backgroundColor: 'var(--color-header-footer)',
-        color: 'var(--color-text)',
-        transition: 'background-color 0.3s ease, color 0.3s ease'
+        backgroundColor: "var(--color-header-footer)",
+        color: "var(--color-text)",
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}
     >
       {items.map((it) => {
