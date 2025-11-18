@@ -10,8 +10,11 @@ import RequestCode from "./pages/RequestCode";
 import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
 import UploadSongPage from "./pages/UploadSongPage";
+<<<<<<<<< Temporary merge branch 1
 import CreatePlaylistPage from "./pages/CreatePlaylistPage";
 import { ThemeContext } from "./components/Profile/theme-context";
+=========
+import { ThemeContext } from './components/Profile/theme-context';
 import ArtistInfo from "./pages/ArtistInfo";
 
 function App() {
@@ -49,11 +52,11 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/upload" element={<UploadSongPage />} />
-<<<<<<< HEAD
-            <Route path="/Artistinfo" element={<ArtistInfo />} />
-=======
+<<<<<<<<< Temporary merge branch 1
             <Route path="/create-playlist" element={<CreatePlaylistPage />} />
->>>>>>> main
+=========
+            <Route path="/Artistinfo" element={<ArtistInfo />} />
+>>>>>>>>> Temporary merge branch 2
           </Route>
         </Routes>
       </Router>
