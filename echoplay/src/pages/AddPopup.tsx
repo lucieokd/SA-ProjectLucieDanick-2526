@@ -17,6 +17,11 @@ const AddPopup: React.FC<AddPopupProps> = ({ show, onClose }) => {
     navigate("/upload"); // navigeer naar UploadSongPage
   };
 
+  const handleCreatePlaylist = () => {
+    onClose();
+    navigate("/create-playlist");
+  };
+
   return (
     <div
       className="position-fixed top-0 start-0 w-100 h-100"
@@ -52,7 +57,10 @@ const AddPopup: React.FC<AddPopupProps> = ({ show, onClose }) => {
           >
             <i className="bi bi-music-note"></i> Add Song
           </button>
-          <button className="custom-btn d-flex align-items-center gap-2 py-2">
+          <button
+            className="custom-btn d-flex align-items-center gap-2 py-2"
+            onClick={handleCreatePlaylist}
+          >
             <i className="bi bi-list-ul"></i> Create Playlist
           </button>
         </div>
