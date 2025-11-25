@@ -10,11 +10,9 @@ import RequestCode from "./pages/RequestCode";
 import VerifyCode from "./pages/VerifyCode";
 import Profile from "./pages/Profile";
 import UploadSongPage from "./pages/UploadSongPage";
-<<<<<<<<< Temporary merge branch 1
 import CreatePlaylistPage from "./pages/CreatePlaylistPage";
 import { ThemeContext } from "./components/Profile/theme-context";
-=========
-import { ThemeContext } from './components/Profile/theme-context';
+import { FavouriteArtistsProvider } from "./contexts/FavouriteArtistsContext";
 import ArtistInfo from "./pages/ArtistInfo";
 
 function App() {
@@ -31,35 +29,33 @@ function App() {
   // Update document.documentElement class wanneer theme verandert
   useEffect(() => {
     document.documentElement.className = `theme-${theme}`;
-    // Sla theme preference op in localStorage
     localStorage.setItem("theme", theme);
   }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
-      <Router>
-        <Routes>
-          {/* Login-pagina zonder layout */}
-          <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/requestcode" element={<RequestCode />} />
-          <Route path="/verifycode" element={<VerifyCode />} />
+      <FavouriteArtistsProvider>
+        <Router>
+          <Routes>
+            {/* Login-pagina zonder layout */}
+            <Route path="/" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/requestcode" element={<RequestCode />} />
+            <Route path="/verifycode" element={<VerifyCode />} />
 
-          {/* Alle andere routes gebruiken de layout mét player */}
-          <Route element={<MainLayout />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/upload" element={<UploadSongPage />} />
-<<<<<<<<< Temporary merge branch 1
-            <Route path="/create-playlist" element={<CreatePlaylistPage />} />
-=========
-            <Route path="/Artistinfo" element={<ArtistInfo />} />
->>>>>>>>> Temporary merge branch 2
-          </Route>
-        </Routes>
-      </Router>
+            {/* Alle andere routes gebruiken de layout mét player */}
+            <Route element={<MainLayout />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/library" element={<Library />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/upload" element={<UploadSongPage />} />
+              <Route path="/create-playlist" element={<CreatePlaylistPage />} />
+              <Route path="/Artistinfo" element={<ArtistInfo />} />
+            </Route>
+          </Routes>
+        </Router>
+      </FavouriteArtistsProvider>
     </ThemeContext.Provider>
   );
 }

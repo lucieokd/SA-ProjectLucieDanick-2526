@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/Navbar.css";
 import {
   AiFillHome,
   AiOutlineSearch,
@@ -24,7 +25,7 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
 
   return (
     <nav
-      className="fixed-bottom d-flex justify-content-around align-items-center border-top shadow-sm"
+      className="fixed-bottom d-flex justify-content-around align-items-center border-top shadow-sm navbar-mobile"
       style={{
         height: "64px",
         zIndex: 1000,

@@ -1,0 +1,73 @@
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 56px; /* Start onder de HeaderBar */
+  height: calc(100vh - 56px); /* Hoogte minus HeaderBar */
+  width: 200px;
+  background-color: var(--color-background, #ffffff);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 20px 0;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  color: var(--color-text, #000000);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  user-select: none;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(108, 43, 217, 0.1);
+}
+
+.sidebar-item.active {
+  background-color: rgba(108, 43, 217, 0.15);
+  color: #6c2bd9;
+  font-weight: 600;
+}
+
+.sidebar-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.sidebar-add-button:hover {
+  color: #6c2bd9;
+}
+
+/* Toon sidebar alleen op tablet en desktop (>= 768px) */
+@media (min-width: 768px) {
+  .sidebar {
+    display: flex;
+  }
+  
+  /* Pas content padding aan voor sidebar */
+  .main-content {
+    margin-left: 200px;
+    padding-bottom: 0;
+  }  
+}
+
+/* Op mobiel: padding onderaan voor navbar */
+@media (max-width: 767px) {
+  .main-content {
+    padding-bottom: 80px;
+  }
+}
+
