@@ -23,7 +23,7 @@ export type PlaylistSong = {
   createdAt: Timestamp;
 };
 
-// 🔥 1. Zoeken of Favorites playlist al bestaat → anders aanmaken
+// 1. Zoeken of Favorites playlist al bestaat → anders aanmaken
 export async function getOrCreateFavoritesPlaylist() {
   const q = query(collection(db, "playlists"), where("name", "==", "Favorites"));
   const snap = await getDocs(q);
@@ -40,7 +40,7 @@ export async function getOrCreateFavoritesPlaylist() {
   return newDoc.id;
 }
 
-// 🔥 2. Track toevoegen aan playlist
+// 2. Track toevoegen aan playlist
 export async function addSongToPlaylist(playlistId: string, track: any) {
   await addDoc(collection(db, "playlistSongs"), {
     playlistId,
@@ -53,7 +53,7 @@ export async function addSongToPlaylist(playlistId: string, track: any) {
   });
 }
 
-// 🔥 3. Realtime subscribe op songs binnen één playlist
+// 3. Realtime subscribe op songs binnen één playlist
 export function subscribeSongs(playlistId: string, onUpdate: (songs: PlaylistSong[]) => void) {
   const q = query(
     collection(db, "playlistSongs"),
