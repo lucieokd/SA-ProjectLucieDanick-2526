@@ -8,6 +8,10 @@ import {
   onSnapshot,
   DocumentData,
   Unsubscribe,
+  updateDoc,
+  arrayUnion,
+  doc,
+  getDocs,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -17,9 +21,10 @@ export type Playlist = {
   description?: string;
   imageUrl?: string | null;
   createdAt: Timestamp;
+  tracks?: any[]; // <-- toegevoegd
 };
 
-// create playlist (uploads image file if provided)
+// create playlist
 export async function createPlaylist({
   name,
   description,
@@ -42,13 +47,13 @@ export async function createPlaylist({
     description: description || null,
     imageUrl,
     createdAt: Timestamp.now(),
+    tracks: [], // <-- playlist bevat tracks
   });
 
   return docRef.id;
 }
 
-// subscribe to playlists (real-time)
-// callback gets array of Playlist
+// subscribe to playlists
 export function subscribePlaylists(
   onUpdate: (items: Playlist[]) => void
 ): Unsubscribe {
@@ -62,10 +67,26 @@ export function subscribePlaylists(
         description: data.description ?? "",
         imageUrl: data.imageUrl ?? null,
         createdAt: data.createdAt,
-      } as Playlist;
+        tracks: data.tracks ?? [], // <-- toegevoegd
+      };
     });
     onUpdate(items);
   });
 
   return unsub;
+}
+
+// 🔎 Zoek playlist op naam
+export async function findPlaylistByName(name: string) {
+  const snap = await getDocs(collection(db, "playlists"));
+  const all = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Playlist[];
+  return all.find((p) => p.name.toLowerCase() === name.toLowerCase()) || null;
+}
+
+// ➕ Track toevoegen aan playlist
+export async function addTrackToPlaylist(playlistId: string, track: any) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  await updateDoc(playlistRef, {
+    tracks: arrayUnion(track),
+  });
 }

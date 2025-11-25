@@ -1,10 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getToken, getFypTracks } from '../../API/SpotifyCred';
-import { getTracksFromITunes } from '../../API/ITunesSearchServices';
-import LoadingSpinner from '../Spotify/LoadingSpinner';
-import Errormessage from '../Spotify/Errormessage';
-import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
-import '../../styles/SongPreview.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { getTracksFromITunes } from "../../API/ITunesSearchServices";
+import LoadingSpinner from "../Spotify/LoadingSpinner";
+import Errormessage from "../Spotify/Errormessage";
+
+import {
+  subscribePlaylists,
+  createPlaylist,
+  addTrackToPlaylist,
+  findPlaylistByName,
+  Playlist,
+} from "../../services/playlistService";
+
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "../../styles/SongPreview.css";
 
 interface Track {
   id: string;
@@ -23,33 +32,43 @@ const SongPreview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // ----------------------------------------------------
+  // Fetch iTunes tracks
+  // ----------------------------------------------------
   useEffect(() => {
     const fetchTracks = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        console.log('Fetching tracks directly from iTunes API...');
-        
+
         const tracksData = await getTracksFromITunes(
-          ['Ninho', 'Aya Nakamura', 'Damso', 'Angèle', 'Stromae', 'Booba', 'PNL'], 
-          [], 
+          [
+            "Ninho",
+            "Aya Nakamura",
+            "Damso",
+            "Angèle",
+            "Stromae",
+            "Booba",
+            "PNL",
+          ],
+          [],
           150
         );
-        console.log('iTunes tracks received:', tracksData?.length || 0);
-        console.log('Tracks met preview URLs:', tracksData.filter((t: any) => t.preview_url).length);
-        
+
         if (!tracksData || tracksData.length === 0) {
-          setError('Geen tracks gevonden via iTunes');
+          setError("Geen tracks gevonden via iTunes");
           return;
         }
-        
+
         setTracks(tracksData);
       } catch (err: any) {
-        setError(err.message || 'Er is een fout opgetreden');
-        console.error('Error fetching tracks:', err);
+        setError(err.message || "Er is een fout opgetreden");
       } finally {
         setLoading(false);
       }
@@ -58,7 +77,17 @@ const SongPreview = () => {
     fetchTracks();
   }, []);
 
-  // Audio reset en reload wanneer track verandert
+  // ----------------------------------------------------
+  // Subscribe playlists for modal list
+  // ----------------------------------------------------
+  useEffect(() => {
+    const unsub = subscribePlaylists((items) => setPlaylists(items));
+    return () => unsub();
+  }, []);
+
+  // ----------------------------------------------------
+  // Reset audio on track change
+  // ----------------------------------------------------
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -71,48 +100,38 @@ const SongPreview = () => {
     }
   }, [currentTrackIndex, tracks]);
 
-  // Navigatie functies
-  const goToNextTrack = useCallback(() => {
+  // Navigation
+  const goToNextTrack = () => {
     if (currentTrackIndex < tracks.length - 1) {
-      setCurrentTrackIndex(prev => prev + 1);
+      setCurrentTrackIndex((prev) => prev + 1);
     }
-  }, [currentTrackIndex, tracks.length]);
+  };
 
-  const goToPreviousTrack = useCallback(() => {
+  const goToPreviousTrack = () => {
     if (currentTrackIndex > 0) {
-      setCurrentTrackIndex(prev => prev - 1);
+      setCurrentTrackIndex((prev) => prev - 1);
     }
-  }, [currentTrackIndex]);
+  };
 
+  // Playback controls
   const togglePlayback = async () => {
-    if (!audioRef.current || !currentTrack.preview_url) {
-      console.log('Geen audio element of preview_url:', {
-        hasAudioRef: !!audioRef.current,
-        hasPreviewUrl: !!currentTrack.preview_url,
-        previewUrl: currentTrack.preview_url
-      });
-      return;
-    }
+    const currentTrack = tracks[currentTrackIndex];
+    if (!audioRef.current || !currentTrack.preview_url) return;
 
     try {
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Zorg dat audio geladen is
         if (audioRef.current.readyState === 0) {
           audioRef.current.load();
         }
-        
         await audioRef.current.play();
         setIsPlaying(true);
-        console.log('Audio afspelen gestart:', currentTrack.preview_url);
       }
-    } catch (error: any) {
-      console.error('Error playing audio:', error);
+    } catch {
       setIsPlaying(false);
-      // Toon error aan gebruiker
-      alert('Kon audio niet afspelen. Mogelijk blokkeert je browser autoplay of de preview is niet beschikbaar.');
+      alert("Kon audio niet afspelen.");
     }
   };
 
@@ -120,76 +139,88 @@ const SongPreview = () => {
     setIsPlaying(false);
   };
 
-  if (loading) {
-    return <LoadingSpinner message="Aanbevelingen laden..." />;
-  }
+  // ----------------------------------------------------
+  // FAVORITE BUTTON
+  // ----------------------------------------------------
+  const handleFavorite = async () => {
+    const currentTrack = tracks[currentTrackIndex];
+    const favName = "Favorite Numbers";
 
-  if (error) {
-    return <Errormessage error={error} />;
-  }
+    // Check playlist existence
+    let favPlaylist = await findPlaylistByName(favName);
 
-  if (!tracks || tracks.length === 0) {
-    return <Errormessage error={undefined} message="Geen aanbevelingen gevonden" />;
-  }
+    // Create if not exists
+    if (!favPlaylist) {
+      const newId = await createPlaylist({
+        name: favName,
+        description: "Your favorite songs",
+        imageFile: null,
+      });
+      favPlaylist = { id: newId } as Playlist;
+    }
+
+    // Add track
+    await addTrackToPlaylist(favPlaylist.id, currentTrack);
+
+    alert(`${currentTrack.name} toegevoegd aan ${favName}`);
+  };
+
+  // ----------------------------------------------------
+  // ADD TO PLAYLIST BUTTON (opens modal)
+  // ----------------------------------------------------
 
   const currentTrack = tracks[currentTrackIndex];
 
+  // ----------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------
+
+  if (loading) return <LoadingSpinner message="Aanbevelingen laden..." />;
+  if (error) return <Errormessage error={error} />;
+  if (!tracks.length)
+    return <Errormessage message="Geen aanbevelingen gevonden" />;
+
   return (
     <div className="position w-100 fyp-container">
+      {/* Left arrow */}
       <button
         className="btn nav-button nav-button-left"
         onClick={goToPreviousTrack}
         disabled={currentTrackIndex === 0}
-        aria-label="Vorige song"
-        type="button"
       >
         <IoChevronBack size={32} />
       </button>
 
+      {/* Right arrow */}
       <button
         className="btn nav-button nav-button-right"
         onClick={goToNextTrack}
         disabled={currentTrackIndex === tracks.length - 1}
-        aria-label="Volgende song"
-        type="button"
       >
         <IoChevronForward size={32} />
       </button>
 
       <div className="track-item">
-        {/* Audio element voor preview */}
+        {/* Audio */}
         {currentTrack.preview_url && (
           <audio
             key={currentTrack.id}
             ref={audioRef}
             src={currentTrack.preview_url}
             onEnded={handleAudioEnded}
-            onPlay={() => {
-              console.log('Audio play event triggered');
-              setIsPlaying(true);
-            }}
-            onPause={() => {
-              console.log('Audio pause event triggered');
-              setIsPlaying(false);
-            }}
-            onError={(e) => {
-              console.error('Audio error:', e);
-              setIsPlaying(false);
-              alert('Fout bij het laden van de audio preview.');
-            }}
-            onCanPlay={() => {
-              console.log('Audio can play:', currentTrack.preview_url);
-            }}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
             preload="auto"
             crossOrigin="anonymous"
           />
         )}
 
+        {/* Cover */}
         <div className="track-cover">
           {currentTrack.album.images.length > 0 ? (
-            <img 
-              src={currentTrack.album.images[0].url} 
-              alt={`Cover van ${currentTrack.album.name}`}
+            <img
+              src={currentTrack.album.images[0].url}
+              alt={currentTrack.album.name}
               className="cover-image"
             />
           ) : (
@@ -197,29 +228,75 @@ const SongPreview = () => {
           )}
         </div>
 
+        {/* Info */}
         <div className="track-info">
           <h2 className="track-title">{currentTrack.name}</h2>
           <p className="track-artist">
-            {currentTrack.artists.map(artist => artist.name).join(', ')}
+            {currentTrack.artists.map((a) => a.name).join(", ")}
           </p>
           <p className="track-album">{currentTrack.album.name}</p>
         </div>
 
+        {/* Controls */}
         <div className="track-controls">
           {currentTrack.preview_url ? (
-            <button 
+            <button
               onClick={togglePlayback}
-              className={`play-button ${isPlaying ? 'playing' : ''}`}
-              type="button"
+              className={`play-button ${isPlaying ? "playing" : ""}`}
             >
-              {isPlaying ? 'Pauze' : 'Afspelen'}
+              {isPlaying ? "Pauze" : "Afspelen"}
             </button>
           ) : (
             <p className="no-preview">Geen preview beschikbaar</p>
           )}
         </div>
 
+        {/* EXTRA BUTTONS */}
+        <div className="extra-buttons mt-3">
+          {/* Favorite */}
+          <button className="btn btn-outline-danger" onClick={handleFavorite}>
+            <i className="bi bi-heart"></i>
+          </button>
+
+          {/* Add to playlist */}
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => setShowPlaylistModal(true)}
+          >
+            <i className="bi bi-plus-circle"></i>
+          </button>
+        </div>
       </div>
+
+      {/* PLAYLIST MODAL */}
+      {showPlaylistModal && (
+        <div className="playlist-modal">
+          <div className="playlist-modal-content">
+            <h3>Kies playlist</h3>
+
+            {playlists.map((pl) => (
+              <div
+                key={pl.id}
+                className="playlist-option"
+                onClick={async () => {
+                  await addTrackToPlaylist(pl.id, currentTrack);
+                  setShowPlaylistModal(false);
+                  alert(`${currentTrack.name} toegevoegd aan ${pl.name}`);
+                }}
+              >
+                {pl.name}
+              </div>
+            ))}
+
+            <button
+              className="btn btn-secondary mt-3"
+              onClick={() => setShowPlaylistModal(false)}
+            >
+              Sluiten
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
