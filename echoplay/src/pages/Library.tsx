@@ -24,7 +24,7 @@ const Library: React.FC = () => {
   const tabs = ["Playlists", "Artists"];
 
   // Zoek pinned favorites (case-insensitive)
-  const pinnedName = "Favorite Numbers";
+  const pinnedName = "Favorites";
   const favorites = playlists.find(
     (p) => p.name?.toLowerCase() === pinnedName.toLowerCase()
   );

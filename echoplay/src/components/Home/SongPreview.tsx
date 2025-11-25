@@ -9,7 +9,10 @@ import {
   subscribePlaylists,
   Playlist,
 } from "../../services/playlistService";
-
+import {
+  getOrCreateFavoritesPlaylist,
+  addSongToPlaylist,
+} from "../../services/playlistsongService";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../../styles/SongPreview.css";
