@@ -37,10 +37,6 @@ const Library: React.FC = () => {
       {/* Header Section */}
       <div className="library-header">
         <h1 className="library-title">Playlists</h1>
-        <div className="header-icons">
-          <AiOutlineSearch className="header-icon" size={24} />
-          <BsThreeDotsVertical className="header-icon" size={24} />
-        </div>
       </div>
 
       {/* Navigation Tabs */}
