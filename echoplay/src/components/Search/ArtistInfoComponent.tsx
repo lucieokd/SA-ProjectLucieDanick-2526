@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getToken, getArtistInfo } from "../../API/SpotifyCred";
+import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
+
+
+interface Artist {
+  id: string;
+  name: string;
+  genres: Array<string>;
+  images: Array<{ url: string }>;
+  followers: {
+    total: number;
+  };
+  popularity: number;
+}
+
 
 const ArtistInfoComponent = () => {
   const [searchParams] = useSearchParams();
@@ -9,25 +23,20 @@ const ArtistInfoComponent = () => {
   const [albums, setAlbums] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { favourite_artists, addArtist, removeArtist, isFollowing } = useFavouriteArtists();
 
    const handleAddArtist = (artist: Artist) => {
-          // .some() controleert of minstens één element in de array voldoet aan een bepaalde voorwaarde.
-          const isAlreadyAdded = favourite_artists.some(fav => fav.id === artist.id);
+          const isAlreadyAdded = isFollowing(artist.id);
           
           if (!isAlreadyAdded) {
-              setFavourite_artists([...favourite_artists, artist]);
+              addArtist(artist);
               console.log("Artiest toegevoegd aan favorieten:", artist.name);
           } else {
-              console.log("Artiest staat al in de favorieten lijst:", artist.name);
+              // Verwijder de artiest als deze al toegevoegd is (unfollow)
+              removeArtist(artist.id);
+              console.log("Artiest verwijderd uit favorieten:", artist.name);
           }
     };
-  
-    const handleVerwijderArtiest = (artistId: string) => {
-        //.filter() maakt een nieuwe array met alle elementen die voldoen aan een bepaalde voorwaarde.
-        const updatedArtists = favourite_artists.filter(artist => artist.id !== artistId);
-        setFavourite_artists(updatedArtists);
-        console.log("Artiest verwijderd uit favorieten:", artistId);
-    }
 
   useEffect(() => {
     const fetchArtistData = async () => {
@@ -123,13 +132,26 @@ const ArtistInfoComponent = () => {
             <p className="mb-3">
               <strong>Volgers:</strong> {artist.followers?.total?.toLocaleString() || 0}
             </p>
-            <div>
-              <button className="btn btn-primary">Volgen</button>
+            <div className="mb-3">
+              {(() => {
+                const isAdded = isFollowing(artist.id);
+                return (
+                  <button 
+                    type="button" 
+                    onClick={() => handleAddArtist(artist)}
+                    className="btn btn-primary"
+                    style={{ marginTop: '10px' }}
+                  >
+                    {isAdded ? 'Unfollow' : 'Follow'}
+                  </button>
+                );
+              })()}
             </div>
-          </div>
         </div>
-      </div>
     </div>
+    </div>
+    </div>
+
   );
 }
 

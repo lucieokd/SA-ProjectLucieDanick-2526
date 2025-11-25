@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import AddPopup from "../pages/AddPopup";
 import HeaderBar from "../components/HeaderBar";
+import "../components/Sidebar.css";
 
 
-const MainLayout: React.FC = () => {
+const MainLayout = () => {
   const [showAddPopup, setShowAddPopup] = useState(false);
 
   return (
@@ -16,7 +18,8 @@ const MainLayout: React.FC = () => {
     }}>
       <HeaderBar/>
       
-      <div className="flex-grow-1" style={{ paddingTop: '56px' }}>
+      <div className="flex-grow-1 main-content" style={{ paddingTop: '56px' }}>
+        <Sidebar onAddClick={() => setShowAddPopup(true)} />
         <Outlet />
       </div>
       <Navbar onAddClick={() => setShowAddPopup(true)} />

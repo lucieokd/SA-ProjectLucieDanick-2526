@@ -29,7 +29,7 @@ const HeaderBar = () => {
 
   return (
     <nav
-      className="fixed-top d-flex justify-content-between align-items-center border-bottom shadow-sm px-3 py-2"
+      className="fixed-top d-flex justify-content-between align-items-center border-bottom shadow-sm px-3 py-2 header-bar"
       style={{
         zIndex: 1002,
         height: "56px",

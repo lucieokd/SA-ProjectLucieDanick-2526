@@ -39,9 +39,9 @@
   padding-bottom: 80px; /* a bit larger than nav height */
 }
 
+/* Verberg navbar op tablet en desktop (>= 768px) */
 @media (min-width: 768px) {
-  /* hide bottom nav on larger screens if desired */
-  .bottom-nav {
-    display: none;
+  .navbar-mobile {
+    display: none !important;
   }
 }
