@@ -36,7 +36,6 @@ const Library: React.FC = () => {
     <div className="library-container">
       {/* Header Section */}
       <div className="library-header">
-        <h1 className="library-title">Playlists</h1>
       </div>
 
       {/* Navigation Tabs */}
