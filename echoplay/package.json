@@ -13,6 +13,7 @@
     "@emailjs/browser": "^4.4.1",
     "@tailwindcss/vite": "^4.1.17",
     "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.1",
     "firebase": "^12.4.0",

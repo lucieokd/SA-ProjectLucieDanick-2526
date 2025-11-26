@@ -13,6 +13,7 @@ import UploadSongPage from "./pages/UploadSongPage";
 import CreatePlaylistPage from "./pages/CreatePlaylistPage";
 import { ThemeContext } from "./components/Profile/theme-context";
 import { FavouriteArtistsProvider } from "./contexts/FavouriteArtistsContext";
+import PlaylistDetails from "./pages/PlaylistDetails";
 import ArtistInfo from "./pages/ArtistInfo";
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
               <Route path="/upload" element={<UploadSongPage />} />
               <Route path="/create-playlist" element={<CreatePlaylistPage />} />
               <Route path="/Artistinfo" element={<ArtistInfo />} />
+              <Route path="/playlist/:id" element={<PlaylistDetails />} />
             </Route>
           </Routes>
         </Router>
