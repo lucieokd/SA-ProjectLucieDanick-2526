@@ -105,6 +105,11 @@ body.theme-light {
   font-size: 13px;
 }
 
+.my-songs-artwork {
+  background: linear-gradient(135deg, #9d4edd, #6c2bd9);
+}
+
+
 /* grid */
 .playlist-grid {
   display: grid;
@@ -162,6 +167,46 @@ body.theme-light {
   color: var(--muted);
   text-align: center;
 }
+.playlist-card-wrapper {
+  position: relative;
+}
+
+.playlist-menu-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: white;
+  z-index: 10;
+}
+
+.playlist-menu-popup {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 8px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.playlist-menu-popup button {
+  padding: 8px;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 120px;
+}
+
+.playlist-menu-popup .delete-btn {
+  color: red;
+}
+
 
 /* responsive */
 @media (max-width: 768px) {

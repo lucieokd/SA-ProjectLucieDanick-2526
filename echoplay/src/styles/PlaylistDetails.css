@@ -65,3 +65,61 @@
 }
 
 .track-actions button { min-width: 44px; }
+
+.track-row {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.track-row:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.track-menu {
+  position: absolute;
+  right: 10px;
+}
+
+.track-menu button {
+  border: none;
+  background: transparent;
+  padding: 6px;
+  font-size: 18px;
+  cursor: pointer;
+  color: white;
+}
+
+.track-popup {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: #fff;
+  color: #111;
+  padding: 10px;
+  border-radius: 8px;
+  min-width: 140px;
+  z-index: 30;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.track-popup button {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.track-popup button:hover {
+  background: #f2f2f2;
+}
+
+.track-popup .danger {
+  color: #d32f2f;
+}
