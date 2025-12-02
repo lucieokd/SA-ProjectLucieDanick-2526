@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/ModalMenu.css";
+import "../../styles/ModalMenu.css";
 
 interface ModalMenuProps {
   show: boolean;
