@@ -89,7 +89,7 @@ const Signup: React.FC = () => {
       >
         <div className="text-center mb-4">
           <img
-            src="logo.png"
+            src="/logo.png"
             alt="EchoPlay Logo"
             className="img-fluid mb-2"
             style={{ width: "70px" }}
