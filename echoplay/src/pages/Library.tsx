@@ -10,7 +10,6 @@ import {
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import "../styles/Library.css";
 import AddPopup from "../pages/AddPopup";
 import ModalMenu from "../components/Playlist/ModalMenu";
