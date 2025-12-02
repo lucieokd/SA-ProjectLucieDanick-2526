@@ -5,9 +5,8 @@ const urlsToCache = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/assets/logo.png",
-  "/assets/cover.jpg",
-  "icons/icon.png",
+  "/logo.png",  // Plaats logo in public/
+  "/icons/icon.png",
 ];
 
 // Installatie van de Service Worker
@@ -28,7 +27,9 @@ self.addEventListener("activate", (event) => {
   console.log("Service Worker activating...");
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.map((name) => name !== CACHE_NAME && caches.delete(name)))
+      Promise.all(
+        names.map((name) => name !== CACHE_NAME && caches.delete(name))
+      )
     )
   );
   self.clients.claim();
@@ -37,19 +38,21 @@ self.addEventListener("activate", (event) => {
 // Fetch event: fallback voor navigatie + cache voor assets
 self.addEventListener("fetch", (event) => {
   if (event.request.mode === "navigate") {
-    // Alle navigatievragen (zoals /home, /about) terug naar index.html
+    // SPA fallback
     event.respondWith(
-      caches.match("/index.html").then((cachedResponse) => {
-        return cachedResponse || fetch(event.request).catch(() => caches.match("/index.html"));
-      })
+      fetch(event.request).catch(() => caches.match("/index.html"))
     );
     return;
   }
 
-  // Andere assets: eerst cache, dan netwerk
+  // Andere assets: eerst cache, dan netwerk, fallback voor images
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
+      return cachedResponse || fetch(event.request).catch(() => {
+        if (event.request.destination === "image") {
+          return caches.match("/logo.png");
+        }
+      });
     })
   );
 });
