@@ -44,6 +44,7 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+  
 
   // Andere assets: eerst cache, dan netwerk, fallback voor images
   event.respondWith(
