@@ -99,8 +99,8 @@ const PlaylistDetails: React.FC = () => {
   return (
     <div className="playlist-details-container">
       {/* Back button */}
-      <button className="btn btn-link" onClick={() => navigate(-1)}>
-        ← Back
+      <button className="btn" onClick={() => navigate(-1)}>
+        &lt;
       </button>
 
       {/* Playlist header */}
