@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
+import { createUser } from "../services/userService";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -84,7 +85,6 @@ const Signup: React.FC = () => {
         style={{
           maxWidth: "400px",
           borderRadius: "20px",
-          backgroundColor: "white",
         }}
       >
         <div className="text-center mb-4">
@@ -125,7 +125,6 @@ const Signup: React.FC = () => {
             />
           </div>
 
-          {/* ✅ dag/maand/jaar veld met nummer-validatie */}
           <div className="d-flex gap-2 mb-3">
             <input
               type="number"

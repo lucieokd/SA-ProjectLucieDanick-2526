@@ -10,6 +10,7 @@ import {
   Unsubscribe,
   updateDoc,
   arrayUnion,
+  arrayRemove,
   doc,
   getDocs,
 } from "firebase/firestore";
@@ -88,5 +89,13 @@ export async function addTrackToPlaylist(playlistId: string, track: any) {
   const playlistRef = doc(db, "playlists", playlistId);
   await updateDoc(playlistRef, {
     tracks: arrayUnion(track),
+  });
+}
+
+// ➖ Track verwijderen uit playlist
+export async function removeTrackFromPlaylist(playlistId: string, track: any) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  await updateDoc(playlistRef, {
+    tracks: arrayRemove(track),
   });
 }

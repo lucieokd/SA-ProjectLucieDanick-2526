@@ -1,14 +1,18 @@
 // src/pages/PlaylistDetails.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { subscribePlaylists, Playlist } from "../services/playlistService";
+import { subscribePlaylists, Playlist, removeTrackFromPlaylist } from "../services/playlistService";
+import { getPreviewUrlFromITunes } from "../API/ITunesSearchServices";
 import "../styles/PlaylistDetails.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 const PlaylistDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [allPlaylists, setAllPlaylists] = useState<Playlist[]>([]);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+  const [tracksWithITunesPreview, setTracksWithITunesPreview] = useState<any[]>([]);
+  const [loadingPreviews, setLoadingPreviews] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
 
@@ -22,6 +26,44 @@ const PlaylistDetails: React.FC = () => {
     const pl = allPlaylists.find((p) => p.id === id) || null;
     setPlaylist(pl);
   }, [allPlaylists, id]);
+
+  // Haal iTunes preview URLs op voor alle tracks
+  useEffect(() => {
+    const fetchITunesPreviews = async () => {
+      if (!playlist?.tracks || playlist.tracks.length === 0) {
+        setTracksWithITunesPreview([]);
+        return;
+      }
+
+      setLoadingPreviews(true);
+      try {
+        const tracksWithPreviews = await Promise.all(
+          playlist.tracks.map(async (track: any) => {
+            const artistName = track.artists?.[0]?.name || track.artists?.[0] || '';
+            const trackName = track.name || '';
+            
+            // Haal preview URL op via iTunes
+            const itunesPreviewUrl = await getPreviewUrlFromITunes(trackName, artistName);
+            
+            return {
+              ...track,
+              preview_url: itunesPreviewUrl || null,
+            };
+          })
+        );
+        
+        setTracksWithITunesPreview(tracksWithPreviews);
+      } catch (error) {
+        console.error("Error fetching iTunes previews:", error);
+        // Fallback naar originele tracks als er een fout is
+        setTracksWithITunesPreview(playlist.tracks);
+      } finally {
+        setLoadingPreviews(false);
+      }
+    };
+
+    fetchITunesPreviews();
+  }, [playlist?.tracks]);
 
   const togglePlay = (previewUrl?: string | null) => {
     if (!previewUrl) return;
@@ -54,6 +96,24 @@ const PlaylistDetails: React.FC = () => {
       .catch(() => {
         alert("Kon audio niet afspelen.");
       });
+  };
+
+  const handleRemoveTrack = async (track: any) => {
+    if (!playlist?.id) return;
+    
+    if (window.confirm(`Weet je zeker dat je "${track.name}" wilt verwijderen uit deze playlist?`)) {
+      try {
+        await removeTrackFromPlaylist(playlist.id, track);
+        // Stop audio als het verwijderde nummer aan het spelen is
+        if (playingUrl === track.preview_url) {
+          audioRef.current?.pause();
+          setPlayingUrl(null);
+        }
+      } catch (error) {
+        console.error("Error removing track:", error);
+        alert("Fout bij verwijderen van nummer.");
+      }
+    }
   };
 
   if (!playlist) {
@@ -90,7 +150,12 @@ const PlaylistDetails: React.FC = () => {
       </div>
 
       <div className="track-list">
-        {(playlist.tracks ?? []).map((t: any, idx: number) => (
+        {loadingPreviews && playlist.tracks && playlist.tracks.length > 0 && (
+          <div className="text-center py-3">
+            <small className="text-muted">Preview URLs laden...</small>
+          </div>
+        )}
+        {(tracksWithITunesPreview.length > 0 ? tracksWithITunesPreview : playlist.tracks ?? []).map((t: any, idx: number) => (
           <div className="track-row" key={t.id ?? `${idx}-${t.name}`}>
             <div className="track-index">{idx + 1}</div>
 
@@ -107,15 +172,16 @@ const PlaylistDetails: React.FC = () => {
             <div className="track-meta">
               <div className="track-name">{t.name}</div>
               <div className="track-artist">
-                {(t.artists || []).map((a: any) => a.name).join(", ")}
+                {(t.artists || []).map((a: any) => (typeof a === 'string' ? a : a.name)).join(", ")}
               </div>
             </div>
 
-            <div className="track-actions">
+            <div className="track-actions d-flex gap-2 align-items-center">
               {t.preview_url ? (
                 <button
                   className="btn btn-sm btn-outline-primary"
                   onClick={() => togglePlay(t.preview_url)}
+                  aria-label={playingUrl === t.preview_url ? "Pauzeren" : "Afspelen"}
                 >
                   {playingUrl === t.preview_url ? (
                     <i className="bi bi-pause-fill"></i>
@@ -126,6 +192,13 @@ const PlaylistDetails: React.FC = () => {
               ) : (
                 <small className="text-muted">Geen preview</small>
               )}
+              <button
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => handleRemoveTrack(t)}
+                aria-label="Verwijderen uit playlist"
+              >
+                <i className="bi bi-trash"></i>
+              </button>
             </div>
           </div>
         ))}

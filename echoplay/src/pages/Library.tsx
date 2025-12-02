@@ -5,7 +5,6 @@ import { subscribePlaylists, Playlist } from "../services/playlistService";
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import "../styles/Library.css";
 import AddPopup from "../pages/AddPopup"; // verbeterde addpopup (zie verder)
 
