@@ -1,21 +1,30 @@
-// src/pages/PlaylistDetails.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { subscribePlaylists, Playlist, removeTrackFromPlaylist } from "../services/playlistService";
-import { getPreviewUrlFromITunes } from "../API/ITunesSearchServices";
+import {
+  subscribePlaylists,
+  Playlist,
+  removeTrackFromPlaylist,
+  deletePlaylist,
+  renamePlaylist,
+} from "../services/playlistService";
 import "../styles/PlaylistDetails.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import ModalMenu from "../components/Playlist/ModalMenu";
 
 const PlaylistDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [allPlaylists, setAllPlaylists] = useState<Playlist[]>([]);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
-  const [tracksWithITunesPreview, setTracksWithITunesPreview] = useState<any[]>([]);
-  const [loadingPreviews, setLoadingPreviews] = useState(false);
+  const [activeTrackModal, setActiveTrackModal] = useState<any | null>(null);
+  const [activePlaylistModal, setActivePlaylistModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
 
+  const PROTECTED = ["favorites", "my songs"];
+
+  /* -----------------------------
+     Realtime playlist updates
+  ----------------------------- */
   useEffect(() => {
     const unsub = subscribePlaylists((items) => setAllPlaylists(items));
     return () => unsub();
@@ -23,112 +32,78 @@ const PlaylistDetails: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    const pl = allPlaylists.find((p) => p.id === id) || null;
-    setPlaylist(pl);
+    setPlaylist(allPlaylists.find((p) => p.id === id) || null);
   }, [allPlaylists, id]);
 
-  // Haal iTunes preview URLs op voor alle tracks
-  useEffect(() => {
-    const fetchITunesPreviews = async () => {
-      if (!playlist?.tracks || playlist.tracks.length === 0) {
-        setTracksWithITunesPreview([]);
-        return;
-      }
+  /* -----------------------------
+     Play / Pause track
+  ----------------------------- */
+  const togglePlay = (url?: string | null) => {
+    if (!url) return;
 
-      setLoadingPreviews(true);
-      try {
-        const tracksWithPreviews = await Promise.all(
-          playlist.tracks.map(async (track: any) => {
-            const artistName = track.artists?.[0]?.name || track.artists?.[0] || '';
-            const trackName = track.name || '';
-            
-            // Haal preview URL op via iTunes
-            const itunesPreviewUrl = await getPreviewUrlFromITunes(trackName, artistName);
-            
-            return {
-              ...track,
-              preview_url: itunesPreviewUrl || null,
-            };
-          })
-        );
-        
-        setTracksWithITunesPreview(tracksWithPreviews);
-      } catch (error) {
-        console.error("Error fetching iTunes previews:", error);
-        // Fallback naar originele tracks als er een fout is
-        setTracksWithITunesPreview(playlist.tracks);
-      } finally {
-        setLoadingPreviews(false);
-      }
-    };
-
-    fetchITunesPreviews();
-  }, [playlist?.tracks]);
-
-  const togglePlay = (previewUrl?: string | null) => {
-    if (!previewUrl) return;
-    if (playingUrl === previewUrl) {
+    if (playingUrl === url) {
       audioRef.current?.pause();
       setPlayingUrl(null);
       return;
     }
 
-    if (!audioRef.current) {
-      audioRef.current = new Audio(previewUrl);
-      audioRef.current.crossOrigin = "anonymous";
-      audioRef.current.onended = () => setPlayingUrl(null);
-      audioRef.current
-        .play()
-        .then(() => setPlayingUrl(previewUrl))
-        .catch(() => {
-          alert("Kon audio niet afspelen.");
-        });
-      return;
-    }
+    if (audioRef.current) audioRef.current.pause();
 
-    audioRef.current.pause();
-    audioRef.current = new Audio(previewUrl);
-    audioRef.current.crossOrigin = "anonymous";
-    audioRef.current.onended = () => setPlayingUrl(null);
-    audioRef.current
-      .play()
-      .then(() => setPlayingUrl(previewUrl))
-      .catch(() => {
-        alert("Kon audio niet afspelen.");
-      });
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.crossOrigin = "anonymous";
+    audio.onended = () => setPlayingUrl(null);
+    audio.play().then(() => setPlayingUrl(url));
   };
 
-  const handleRemoveTrack = async (track: any) => {
-    if (!playlist?.id) return;
-    
-    if (window.confirm(`Weet je zeker dat je "${track.name}" wilt verwijderen uit deze playlist?`)) {
-      try {
-        await removeTrackFromPlaylist(playlist.id, track);
-        // Stop audio als het verwijderde nummer aan het spelen is
-        if (playingUrl === track.preview_url) {
-          audioRef.current?.pause();
-          setPlayingUrl(null);
-        }
-      } catch (error) {
-        console.error("Error removing track:", error);
-        alert("Fout bij verwijderen van nummer.");
-      }
-    }
+  /* -----------------------------
+     Track modal handlers
+  ----------------------------- */
+  const openTrackModal = (track: any) => setActiveTrackModal(track);
+  const closeTrackModal = () => setActiveTrackModal(null);
+
+  const handleRemoveTrack = async () => {
+    if (!playlist || !activeTrackModal) return;
+    await removeTrackFromPlaylist(playlist.id, activeTrackModal);
+    closeTrackModal();
   };
 
-  if (!playlist) {
-    return (
-      <div className="playlist-details-container">
-        <button className="btn btn-link" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
-        <p>Playlist laden…</p>
-      </div>
-    );
-  }
+  /* -----------------------------
+     Playlist modal handlers
+  ----------------------------- */
+  const openPlaylistModal = () => setActivePlaylistModal(true);
+  const closePlaylistModal = () => setActivePlaylistModal(false);
+
+  const handleRenamePlaylist = async () => {
+    if (!playlist || PROTECTED.includes(playlist.name.toLowerCase())) return;
+
+    const newName = window.prompt("Nieuwe naam voor playlist:", playlist.name);
+    if (!newName || !newName.trim()) return;
+
+    await renamePlaylist(playlist.id, newName.trim());
+    closePlaylistModal();
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!playlist) return;
+    if (!window.confirm(`Verwijder playlist "${playlist.name}"?`)) return;
+
+    await deletePlaylist(playlist.id);
+    navigate("/library");
+  };
+
+  if (!playlist) return <p>Playlist laden...</p>;
+
+  const isProtected = PROTECTED.includes(playlist.name.toLowerCase());
 
   return (
     <div className="playlist-details-container">
+      {/* Back button */}
+      <button className="btn" onClick={() => navigate(-1)}>
+        &lt;
+      </button>
+
+      {/* Playlist header */}
       <div className="playlist-header">
         <div className="cover-large">
           {playlist.imageUrl ? (
@@ -147,62 +122,74 @@ const PlaylistDetails: React.FC = () => {
             {playlist.tracks?.length ?? 0} nummers
           </div>
         </div>
+
+        {/* Playlist 3-dots */}
+        {!isProtected && (
+          <button
+            className="btn btn-outline-secondary"
+            onClick={openPlaylistModal}
+          >
+            <i className="bi bi-three-dots"></i>
+          </button>
+        )}
       </div>
 
+      {/* Track list */}
       <div className="track-list">
-        {loadingPreviews && playlist.tracks && playlist.tracks.length > 0 && (
-          <div className="text-center py-3">
-            <small className="text-muted">Preview URLs laden...</small>
-          </div>
-        )}
-        {(tracksWithITunesPreview.length > 0 ? tracksWithITunesPreview : playlist.tracks ?? []).map((t: any, idx: number) => (
-          <div className="track-row" key={t.id ?? `${idx}-${t.name}`}>
+        {(playlist.tracks ?? []).map((t, idx) => (
+          <div
+            key={t.id || idx}
+            className="track-row"
+            onClick={() => t.preview_url && togglePlay(t.preview_url)}
+          >
             <div className="track-index">{idx + 1}</div>
-
             <div className="track-thumb">
               {t.album?.images?.[0]?.url ? (
-                <img src={t.album.images[0].url} alt={t.album?.name} />
+                <img src={t.album.images[0].url} alt={t.name} />
               ) : (
                 <div className="thumb-placeholder">
                   <i className="bi bi-music-note"></i>
                 </div>
               )}
             </div>
-
             <div className="track-meta">
               <div className="track-name">{t.name}</div>
               <div className="track-artist">
-                {(t.artists || []).map((a: any) => (typeof a === 'string' ? a : a.name)).join(", ")}
+                {(t.artists || []).map((a: any) => a.name).join(", ")}
               </div>
             </div>
 
-            <div className="track-actions d-flex gap-2 align-items-center">
-              {t.preview_url ? (
-                <button
-                  className="btn btn-sm btn-outline-primary"
-                  onClick={() => togglePlay(t.preview_url)}
-                  aria-label={playingUrl === t.preview_url ? "Pauzeren" : "Afspelen"}
-                >
-                  {playingUrl === t.preview_url ? (
-                    <i className="bi bi-pause-fill"></i>
-                  ) : (
-                    <i className="bi bi-play-fill"></i>
-                  )}
-                </button>
-              ) : (
-                <small className="text-muted">Geen preview</small>
-              )}
+            {/* Track 3-dots */}
+            {!isProtected && (
               <button
-                className="btn btn-sm btn-outline-danger"
-                onClick={() => handleRemoveTrack(t)}
-                aria-label="Verwijderen uit playlist"
+                className="track-menu-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openTrackModal(t);
+                }}
               >
-                <i className="bi bi-trash"></i>
+                <i className="bi bi-three-dots"></i>
               </button>
-            </div>
+            )}
           </div>
         ))}
       </div>
+
+      {/* Playlist Modal */}
+      <ModalMenu
+        show={activePlaylistModal}
+        onClose={closePlaylistModal}
+        onRename={handleRenamePlaylist}
+        onDelete={handleDeletePlaylist}
+        disableRename={isProtected}
+      />
+
+      {/* Track Modal */}
+      <ModalMenu
+        show={!!activeTrackModal}
+        onClose={closeTrackModal}
+        onDelete={handleRemoveTrack} // geen onRename
+      />
     </div>
   );
 };
