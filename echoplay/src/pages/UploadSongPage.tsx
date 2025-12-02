@@ -33,75 +33,160 @@ const UploadSongPage: React.FC = () => {
       return;
     }
 
-    // Hier kun je later je upload-logica toevoegen (Firestore / Storage)
     alert(
       `Uploading:\nSong: ${songName}\nCover: ${coverFile.name}\nAudio: ${audioFile.name}`
     );
   };
 
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
-      <h2>Upload Music</h2>
+    <div
+      style={{
+        maxWidth: "500px",
+        margin: "0 auto",
+        padding: "24px",
+        fontFamily: "system-ui, sans-serif",
+        color: "#000",
+      }}
+    >
+      <h2 style={{ fontWeight: 700, marginBottom: "20px" }}>Upload Music</h2>
 
-      {/* Cover Upload */}
-      <div style={{ marginBottom: "20px" }}>
-        <label
-          style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
-        >
-          Upload Cover Image
-        </label>
-        <input type="file" accept="image/*" onChange={handleCoverChange} />
-        {coverFile && <p>Selected: {coverFile.name}</p>}
-      </div>
-
-      {/* Song Name */}
-      <div style={{ marginBottom: "20px" }}>
-        <label
-          style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
-        >
-          Song Name
-        </label>
-        <input
-          type="text"
-          placeholder="Enter song name"
-          value={songName}
-          onChange={(e) => setSongName(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-          }}
-        />
-      </div>
-
-      {/* Audio Upload */}
-      <div style={{ marginBottom: "20px" }}>
-        <label
-          style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
-        >
-          Upload Audio File
-        </label>
-        <input type="file" accept="audio/*" onChange={handleAudioChange} />
-        {audioFile && <p>Selected: {audioFile.name}</p>}
-      </div>
-
-      {/* Upload Button */}
-      <button
-        onClick={handleUpload}
+      {/* Card */}
+      <div
         style={{
-          backgroundColor: "#6c2bd9",
-          color: "white",
-          padding: "12px",
-          width: "100%",
-          border: "none",
-          borderRadius: "8px",
-          fontWeight: 600,
-          cursor: "pointer",
+          backgroundColor: "#fff",
+          padding: "20px",
+          borderRadius: "14px",
+          boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
         }}
       >
-        Upload
-      </button>
+        {/* Cover Upload */}
+        <div style={{ marginBottom: "20px" }}>
+          <label
+            style={{ fontWeight: 600, marginBottom: "8px", display: "block" }}
+          >
+            Cover Image
+          </label>
+
+          {/* Pretty upload button */}
+          <label
+            style={{
+              display: "inline-block",
+              padding: "10px 16px",
+              backgroundColor: "#f4f4f5",
+              color: "#000",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: 500,
+              border: "1px solid #d1d1d1",
+            }}
+          >
+            Choose cover
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleCoverChange}
+              style={{ display: "none" }}
+            />
+          </label>
+
+          {coverFile && (
+            <div style={{ marginTop: "12px" }}>
+              <img
+                src={URL.createObjectURL(coverFile)}
+                alt="Cover preview"
+                style={{
+                  width: "100%",
+                  maxWidth: "180px",
+                  borderRadius: "10px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                }}
+              />
+              <p style={{ marginTop: "6px", fontSize: "14px", opacity: 0.7 }}>
+                {coverFile.name}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Song Name */}
+        <div style={{ marginBottom: "20px" }}>
+          <label
+            style={{ display: "block", fontWeight: 600, marginBottom: "8px" }}
+          >
+            Song Name
+          </label>
+          <input
+            type="text"
+            value={songName}
+            onChange={(e) => setSongName(e.target.value)}
+            placeholder="Enter song name"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "8px",
+              border: "1px solid #d1d1d1",
+              fontSize: "16px",
+              color: "#000",
+            }}
+          />
+        </div>
+
+        {/* Audio Upload */}
+        <div style={{ marginBottom: "20px" }}>
+          <label
+            style={{ fontWeight: 600, marginBottom: "8px", display: "block" }}
+          >
+            Audio File
+          </label>
+
+          <label
+            style={{
+              display: "inline-block",
+              padding: "10px 16px",
+              backgroundColor: "#f4f4f5",
+              color: "#000",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: 500,
+              border: "1px solid #d1d1d1",
+            }}
+          >
+            Choose audio
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={handleAudioChange}
+              style={{ display: "none" }}
+            />
+          </label>
+
+          {audioFile && (
+            <p style={{ marginTop: "8px", fontSize: "14px", opacity: 0.7 }}>
+              {audioFile.name}
+            </p>
+          )}
+        </div>
+
+        {/* Upload Button */}
+        <button
+          onClick={handleUpload}
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#6c2bd9",
+            color: "white",
+            width: "100%",
+            padding: "14px",
+            borderRadius: "10px",
+            fontWeight: 600,
+            fontSize: "16px",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 6px 18px rgba(108,43,217,0.25)",
+          }}
+        >
+          Upload Song
+        </button>
+      </div>
     </div>
   );
 };

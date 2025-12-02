@@ -1,4 +1,3 @@
-// src/pages/PlaylistDetails.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { subscribePlaylists, Playlist, removeTrackFromPlaylist } from "../services/playlistService";
@@ -16,6 +15,11 @@ const PlaylistDetails: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
 
+  const PROTECTED = ["favorites", "my songs"];
+
+  /* -----------------------------
+     Realtime playlist updates
+  ----------------------------- */
   useEffect(() => {
     const unsub = subscribePlaylists((items) => setAllPlaylists(items));
     return () => unsub();
@@ -23,8 +27,7 @@ const PlaylistDetails: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    const pl = allPlaylists.find((p) => p.id === id) || null;
-    setPlaylist(pl);
+    setPlaylist(allPlaylists.find((p) => p.id === id) || null);
   }, [allPlaylists, id]);
 
   // Haal iTunes preview URLs op voor alle tracks
@@ -73,29 +76,13 @@ const PlaylistDetails: React.FC = () => {
       return;
     }
 
-    if (!audioRef.current) {
-      audioRef.current = new Audio(previewUrl);
-      audioRef.current.crossOrigin = "anonymous";
-      audioRef.current.onended = () => setPlayingUrl(null);
-      audioRef.current
-        .play()
-        .then(() => setPlayingUrl(previewUrl))
-        .catch(() => {
-          alert("Kon audio niet afspelen.");
-        });
-      return;
-    }
+    if (audioRef.current) audioRef.current.pause();
 
-    audioRef.current.pause();
-    audioRef.current = new Audio(previewUrl);
-    audioRef.current.crossOrigin = "anonymous";
-    audioRef.current.onended = () => setPlayingUrl(null);
-    audioRef.current
-      .play()
-      .then(() => setPlayingUrl(previewUrl))
-      .catch(() => {
-        alert("Kon audio niet afspelen.");
-      });
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.crossOrigin = "anonymous";
+    audio.onended = () => setPlayingUrl(null);
+    audio.play().then(() => setPlayingUrl(url));
   };
 
   const handleRemoveTrack = async (track: any) => {
@@ -129,6 +116,12 @@ const PlaylistDetails: React.FC = () => {
 
   return (
     <div className="playlist-details-container">
+      {/* Back button */}
+      <button className="btn" onClick={() => navigate(-1)}>
+        &lt;
+      </button>
+
+      {/* Playlist header */}
       <div className="playlist-header">
         <div className="cover-large">
           {playlist.imageUrl ? (
@@ -147,8 +140,19 @@ const PlaylistDetails: React.FC = () => {
             {playlist.tracks?.length ?? 0} nummers
           </div>
         </div>
+
+        {/* Playlist 3-dots */}
+        {!isProtected && (
+          <button
+            className="btn btn-outline-secondary"
+            onClick={openPlaylistModal}
+          >
+            <i className="bi bi-three-dots"></i>
+          </button>
+        )}
       </div>
 
+      {/* Track list */}
       <div className="track-list">
         {loadingPreviews && playlist.tracks && playlist.tracks.length > 0 && (
           <div className="text-center py-3">
@@ -158,17 +162,15 @@ const PlaylistDetails: React.FC = () => {
         {(tracksWithITunesPreview.length > 0 ? tracksWithITunesPreview : playlist.tracks ?? []).map((t: any, idx: number) => (
           <div className="track-row" key={t.id ?? `${idx}-${t.name}`}>
             <div className="track-index">{idx + 1}</div>
-
             <div className="track-thumb">
               {t.album?.images?.[0]?.url ? (
-                <img src={t.album.images[0].url} alt={t.album?.name} />
+                <img src={t.album.images[0].url} alt={t.name} />
               ) : (
                 <div className="thumb-placeholder">
                   <i className="bi bi-music-note"></i>
                 </div>
               )}
             </div>
-
             <div className="track-meta">
               <div className="track-name">{t.name}</div>
               <div className="track-artist">
@@ -203,6 +205,22 @@ const PlaylistDetails: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Playlist Modal */}
+      <ModalMenu
+        show={activePlaylistModal}
+        onClose={closePlaylistModal}
+        onRename={handleRenamePlaylist}
+        onDelete={handleDeletePlaylist}
+        disableRename={isProtected}
+      />
+
+      {/* Track Modal */}
+      <ModalMenu
+        show={!!activeTrackModal}
+        onClose={closeTrackModal}
+        onDelete={handleRemoveTrack} // geen onRename
+      />
     </div>
   );
 };
