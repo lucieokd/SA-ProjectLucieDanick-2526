@@ -23,6 +23,9 @@ export type User = {
 
 // Maak een nieuwe user aan in Firestore
 export async function createUser(userData: Omit<User, "id">): Promise<string> {
+  if (!userData.authId) {
+    throw new Error("authId is required");
+  }
   const docRef = doc(collection(db, "users"));
   await setDoc(docRef, userData);
   return docRef.id;

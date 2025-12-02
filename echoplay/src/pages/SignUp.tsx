@@ -57,7 +57,22 @@ const Signup: React.FC = () => {
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Maak eerst de auth gebruiker aan
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Maak nu het user document aan in Firestore
+      await createUser({
+        authId: user.uid,  // ⬅️ Voeg authId toe
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        geboorteDag: dayNum,
+        geboorteMaand: monthNum,
+        geboorteJaar: yearNum,
+        favoriteArtist: []  // ⬅️ Lege array voor favoriteArtist
+      });
+      
       console.log("Signup successful");
       navigate("/home");
     } catch (err: any) {

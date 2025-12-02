@@ -22,9 +22,7 @@ const PlaylistDetails: React.FC = () => {
 
   const PROTECTED = ["favorites", "my songs"];
 
-  /* -----------------------------
-     Realtime playlist updates
-  ----------------------------- */
+
   useEffect(() => {
     const unsub = subscribePlaylists((items) => setAllPlaylists(items));
     return () => unsub();
@@ -35,9 +33,7 @@ const PlaylistDetails: React.FC = () => {
     setPlaylist(allPlaylists.find((p) => p.id === id) || null);
   }, [allPlaylists, id]);
 
-  /* -----------------------------
-     Play / Pause track
-  ----------------------------- */
+
   const togglePlay = (url?: string | null) => {
     if (!url) return;
 
@@ -56,9 +52,7 @@ const PlaylistDetails: React.FC = () => {
     audio.play().then(() => setPlayingUrl(url));
   };
 
-  /* -----------------------------
-     Track modal handlers
-  ----------------------------- */
+
   const openTrackModal = (track: any) => setActiveTrackModal(track);
   const closeTrackModal = () => setActiveTrackModal(null);
 
@@ -68,9 +62,7 @@ const PlaylistDetails: React.FC = () => {
     closeTrackModal();
   };
 
-  /* -----------------------------
-     Playlist modal handlers
-  ----------------------------- */
+
   const openPlaylistModal = () => setActivePlaylistModal(true);
   const closePlaylistModal = () => setActivePlaylistModal(false);
 
@@ -98,12 +90,10 @@ const PlaylistDetails: React.FC = () => {
 
   return (
     <div className="playlist-details-container">
-      {/* Back button */}
       <button className="btn" onClick={() => navigate(-1)}>
         &lt;
       </button>
 
-      {/* Playlist header */}
       <div className="playlist-header">
         <div className="cover-large">
           {playlist.imageUrl ? (
@@ -123,7 +113,6 @@ const PlaylistDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Playlist 3-dots */}
         {!isProtected && (
           <button
             className="btn btn-outline-secondary"
@@ -134,7 +123,6 @@ const PlaylistDetails: React.FC = () => {
         )}
       </div>
 
-      {/* Track list */}
       <div className="track-list">
         {(playlist.tracks ?? []).map((t, idx) => (
           <div
@@ -159,7 +147,6 @@ const PlaylistDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* Track 3-dots */}
             {!isProtected && (
               <button
                 className="track-menu-btn"
@@ -175,7 +162,6 @@ const PlaylistDetails: React.FC = () => {
         ))}
       </div>
 
-      {/* Playlist Modal */}
       <ModalMenu
         show={activePlaylistModal}
         onClose={closePlaylistModal}
@@ -184,11 +170,10 @@ const PlaylistDetails: React.FC = () => {
         disableRename={isProtected}
       />
 
-      {/* Track Modal */}
       <ModalMenu
         show={!!activeTrackModal}
         onClose={closeTrackModal}
-        onDelete={handleRemoveTrack} // geen onRename
+        onDelete={handleRemoveTrack} 
       />
     </div>
   );
