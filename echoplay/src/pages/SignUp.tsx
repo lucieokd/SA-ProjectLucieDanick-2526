@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
+import { createUser } from "../services/userService";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -11,9 +12,6 @@ const Signup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [day, setDay] = useState("");
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -39,32 +37,30 @@ const Signup: React.FC = () => {
       return;
     }
 
-    const dayNum = parseInt(day);
-    const monthNum = parseInt(month);
-    const yearNum = parseInt(year);
-
-    if (
-      isNaN(dayNum) ||
-      dayNum < 1 ||
-      dayNum > 31 ||
-      isNaN(monthNum) ||
-      monthNum < 1 ||
-      monthNum > 12 ||
-      isNaN(yearNum) ||
-      yearNum < minYear ||
-      yearNum > currentYear
-    ) {
-      setError("Please enter a valid date of birth.");
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Maak eerst de auth gebruiker aan
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Maak nu het user document aan in Firestore
+      await createUser({
+        authId: user.uid, // ⬅️ Voeg authId toe
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        favArtists: [], // ⬅️ Lege array voor favoriteArtist
+      });
+
+      console.log("Signup successful");
       navigate("/home");
     } catch (err: any) {
       console.error(err);
@@ -88,7 +84,10 @@ const Signup: React.FC = () => {
     <div className="d-flex justify-content-center align-items-center w-100 vh-100 bg-light">
       <div
         className="card shadow p-4 w-100"
-        style={{ maxWidth: "400px", borderRadius: "20px" }}
+        style={{
+          maxWidth: "400px",
+          borderRadius: "20px",
+        }}
       >
         <div className="text-center mb-4">
           <img src="/logo.png" alt="EchoPlay Logo" style={{ width: "70px" }} />
@@ -96,7 +95,52 @@ const Signup: React.FC = () => {
         </div>
 
         <form onSubmit={onSignUpClick}>
-          {/* ... jouw bestaande form hier ... */}
+          <div className="mb-3">
+            <input
+              type="email"
+              className="form-control form-control-lg rounded-pill text-center"
+              placeholder="john.doe@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="d-flex gap-2 mb-3">
+            <input
+              type="text"
+              className="form-control form-control-lg rounded-pill text-center"
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            <input
+              type="text"
+              className="form-control form-control-lg rounded-pill text-center"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-3">
+            <input
+              type="password"
+              className="form-control form-control-lg rounded-pill text-center"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4">
+            <input
+              type="password"
+              className="form-control form-control-lg rounded-pill text-center"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
 
           {error && <ErrorMessage text={error} />}
 

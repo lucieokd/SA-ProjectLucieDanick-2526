@@ -23,7 +23,7 @@ const ArtistInfoComponent = () => {
   const [albums, setAlbums] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { favourite_artists, addArtist, removeArtist, isFollowing } = useFavouriteArtists();
+  const { favArtists, addArtist, removeArtist, isFollowing } = useFavouriteArtists();
 
    const handleAddArtist = (artist: Artist) => {
           const isAlreadyAdded = isFollowing(artist.id);

@@ -12,3 +12,14 @@
 * login, player, sign up pagina's : 3u
 * erros fixen + omzetten naar TS: 2u
 
+## Week 6 :
+* app Prograssive maken + start app  : 6u
+* erros fixen + omzetten naar TS: 2u
+
+## Week 8 :
+* library pagina's + add pop + opzetten firestore (op school met danick) : 5
+
+## Week 9 :
+* library pagina: nummers toevoegen aan de favorites playlist : 2u
+* website online gezet : 40 min
+* dataopslag : 1uur

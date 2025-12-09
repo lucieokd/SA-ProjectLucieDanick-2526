@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
+import { getUserByAuthId, createUser } from "../services/userService";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +21,36 @@ const Login: React.FC = () => {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Controleer of er al een user document bestaat
+      const existingUser = await getUserByAuthId(user.uid);
+
+      // Als er geen user document bestaat, maak er een aan
+      if (!existingUser) {
+        // Probeer displayName te gebruiken als die bestaat, anders gebruik email
+        const displayName = user.displayName || "";
+        const nameParts = displayName.split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        await createUser({
+          authId: user.uid,
+          email: user.email || email,
+          firstName: firstName,
+          lastName: lastName,
+          favArtists: [],
+        });
+
+        console.log("User document aangemaakt voor bestaande gebruiker");
+      }
+
+      console.log("Login successful!");
       navigate("/home");
     } catch (err: any) {
       console.error("Login failed:", err.message);
@@ -62,7 +93,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center mb-4">
           <img
-            src="/logo.png"
+            src="/src/assets/logo.png"
             alt="Echoplay Logo"
             className="img-fluid mb-2"
             style={{ width: "80px" }}

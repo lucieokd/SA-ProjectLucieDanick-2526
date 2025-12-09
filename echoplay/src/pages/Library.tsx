@@ -10,10 +10,10 @@ import {
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import "../styles/Library.css";
 import AddPopup from "../pages/AddPopup";
 import ModalMenu from "../components/Playlist/ModalMenu";
+import FavouriteArtists from "../components/Playlist/FavouriteArtists";
 
 const Library: React.FC = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -116,7 +116,7 @@ const Library: React.FC = () => {
     <div className="library-container">
       {/* HEADER */}
       <div className="library-header">
-        <h1 className="library-title">Playlists</h1>
+        <h1 className="library-title">Library</h1>
         <div className="header-actions">
           <div className="header-icons">
             <AiOutlineSearch className="header-icon" size={22} />
@@ -146,104 +146,112 @@ const Library: React.FC = () => {
         ))}
       </div>
 
-      {/* Favorites / My Songs */}
-      {favorites && (
-        <div
-          className="favorites-card"
-          onClick={() => navigate(`/playlist/${favorites.id}`)}
-          role="button"
-          tabIndex={0}
-        >
-          <div className="favorites-artwork" />
-          <div className="favorites-info">
-            <div className="favorites-title">Favorites</div>
-            <div className="favorites-sub">
-              {favorites.tracks?.length ?? 0} nummers
-            </div>
-          </div>
-          <div className="favorites-icon">
-            <i className="bi bi-heart-fill"></i>
-          </div>
-        </div>
-      )}
-      {mySongs && (
-        <div
-          className="favorites-card"
-          onClick={() => navigate(`/playlist/${mySongs.id}`)}
-          role="button"
-          tabIndex={0}
-        >
-          <div className="favorites-artwork my-songs-artwork" />
-          <div className="favorites-info">
-            <div className="favorites-title">My Songs</div>
-            <div className="favorites-sub">
-              {mySongs.tracks?.length ?? 0} nummers
-            </div>
-          </div>
-          <div className="favorites-icon">
-            <i className="bi bi-music-note-beamed"></i>
-          </div>
-        </div>
-      )}
-
-      {/* Playlist Grid */}
-      {playlists.length === 0 ? (
-        <div className="text-center empty-state">
-          <p>No playlists yet. Create one using the + button.</p>
-        </div>
-      ) : (
-        <div className="playlist-grid">
-          {playlists
-            .filter(
-              (p) =>
-                p.name?.toLowerCase() !== pinnedName.toLowerCase() &&
-                p.name?.toLowerCase() !== mySongsName.toLowerCase()
-            )
-            .map((p) => (
-              <div key={p.id} className="playlist-card-wrapper">
-                <div
-                  className="playlist-card"
-                  onClick={() => navigate(`/playlist/${p.id}`)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  {p.imageUrl ? (
-                    <img
-                      src={p.imageUrl}
-                      alt={p.name}
-                      className="playlist-image"
-                    />
-                  ) : (
-                    <div className="playlist-image-placeholder">
-                      <i className="bi bi-music-note-beamed"></i>
-                    </div>
-                  )}
-                  <div className="playlist-info">
-                    <p className="playlist-title">{p.name}</p>
-                    <small className="playlist-subtitle">
-                      {p.description || "Echoplay"}
-                    </small>
-                  </div>
-
-                  {/* 3-dots menu */}
-                  <div
-                    className="playlist-menu-wrapper"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      className="playlist-menu-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openModal(p);
-                      }}
-                    >
-                      <BsThreeDotsVertical size={18} />
-                    </button>
-                  </div>
+      {/* Conditionally render content based on active tab */}
+      {activeTab === "Playlists" ? (
+        <>
+          {/* Favorites / My Songs */}
+          {favorites && (
+            <div
+              className="favorites-card"
+              onClick={() => navigate(`/playlist/${favorites.id}`)}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="favorites-artwork" />
+              <div className="favorites-info">
+                <div className="favorites-title">Favorites</div>
+                <div className="favorites-sub">
+                  {favorites.tracks?.length ?? 0} nummers
                 </div>
               </div>
-            ))}
-        </div>
+              <div className="favorites-icon">
+                <i className="bi bi-heart-fill"></i>
+              </div>
+            </div>
+          )}
+          {mySongs && (
+            <div
+              className="favorites-card"
+              onClick={() => navigate(`/playlist/${mySongs.id}`)}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="favorites-artwork my-songs-artwork" />
+              <div className="favorites-info">
+                <div className="favorites-title">My Songs</div>
+                <div className="favorites-sub">
+                  {mySongs.tracks?.length ?? 0} nummers
+                </div>
+              </div>
+              <div className="favorites-icon">
+                <i className="bi bi-music-note-beamed"></i>
+              </div>
+            </div>
+          )}
+
+          {/* Playlist Grid */}
+          {playlists.length === 0 ? (
+            <div className="text-center empty-state">
+              <p>No playlists yet. Create one using the + button.</p>
+            </div>
+          ) : (
+            <div className="playlist-grid">
+              {playlists
+                .filter(
+                  (p) =>
+                    p.name?.toLowerCase() !== pinnedName.toLowerCase() &&
+                    p.name?.toLowerCase() !== mySongsName.toLowerCase()
+                )
+                .map((p) => (
+                  <div key={p.id} className="playlist-card-wrapper">
+                    <div
+                      className="playlist-card"
+                      onClick={() => navigate(`/playlist/${p.id}`)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      {p.imageUrl ? (
+                        <img
+                          src={p.imageUrl}
+                          alt={p.name}
+                          className="playlist-image"
+                        />
+                      ) : (
+                        <div className="playlist-image-placeholder">
+                          <i className="bi bi-music-note-beamed"></i>
+                        </div>
+                      )}
+                      <div className="playlist-info">
+                        <p className="playlist-title">{p.name}</p>
+                        <small className="playlist-subtitle">
+                          {p.description || "Echoplay"}
+                        </small>
+                      </div>
+
+                      {/* 3-dots menu */}
+                      <div
+                        className="playlist-menu-wrapper"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          className="playlist-menu-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModal(p);
+                          }}
+                        >
+                          <BsThreeDotsVertical size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </>
+      ) : (
+        /* Artists Tab */
+        <FavouriteArtists />
       )}
 
       <AddPopup show={showAddPopup} onClose={() => setShowAddPopup(false)} />

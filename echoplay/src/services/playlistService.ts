@@ -11,6 +11,7 @@ import {
   Unsubscribe,
   updateDoc,
   arrayUnion,
+  arrayRemove,
   doc,
   getDocs,
   deleteDoc,
@@ -140,88 +141,24 @@ export async function addTrackToPlaylist(playlistId: string, track: any) {
   });
 }
 
-/* ---------------------------------------
-   ❌ Playlist verwijderen
----------------------------------------- */
-
-export async function deletePlaylist(playlistId: string) {
-  const refDoc = doc(db, "playlists", playlistId);
-  await deleteDoc(refDoc);
-}
-
-/* ---------------------------------------
-   ✏️ Playlist naam wijzigen
----------------------------------------- */
-
-export async function renamePlaylist(playlistId: string, newName: string) {
-  const refDoc = doc(db, "playlists", playlistId);
-  await updateDoc(refDoc, { name: newName });
-}
-
-/* ---------------------------------------
-   ❌ Track verwijderen uit playlist
----------------------------------------- */
-
+// ➖ Track verwijderen uit playlist
 export async function removeTrackFromPlaylist(playlistId: string, track: any) {
   const playlistRef = doc(db, "playlists", playlistId);
-  const snap = await getDoc(playlistRef);
-
-  if (!snap.exists()) return;
-
-  const data = snap.data();
-  const oldTracks = data?.tracks ?? [];
-
-  // Track eruit
-  const updatedTracks = oldTracks.filter((t: any) => t.id !== track.id);
-
-  // ❗ Geen tracks meer → playlist verwijderen
-  if (updatedTracks.length === 0) {
-    await deleteDoc(playlistRef);
-    return;
-  }
-
-  await updateDoc(playlistRef, { tracks: updatedTracks });
+  await updateDoc(playlistRef, {
+    tracks: arrayRemove(track),
+  });
 }
 
-/* ---------------------------------------
-   🎵 Song upload → automatisch naar My Songs
----------------------------------------- */
+// ✏️ Playlist hernoemen
+export async function renamePlaylist(playlistId: string, newName: string) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  await updateDoc(playlistRef, {
+    name: newName,
+  });
+}
 
-export async function uploadSongToMySongs({
-  audioFile,
-  coverFile,
-  name,
-}: {
-  audioFile: File;
-  coverFile?: File | null;
-  name: string;
-}) {
-  const mySongsId = await getOrCreateMySongs();
-
-  // Upload audio
-  const audioRef = ref(storage, `songs/${Date.now()}_${audioFile.name}`);
-  const audioSnap = await uploadBytes(audioRef, audioFile);
-  const audioUrl = await getDownloadURL(audioSnap.ref);
-
-  // Upload cover (optioneel)
-  let coverUrl: string | null = null;
-
-  if (coverFile) {
-    const coverRef = ref(storage, `covers/${Date.now()}_${coverFile.name}`);
-    const coverSnap = await uploadBytes(coverRef, coverFile);
-    coverUrl = await getDownloadURL(coverSnap.ref);
-  }
-
-  // Track object (zoals Spotify)
-  const track = {
-    id: Date.now().toString(),
-    name,
-    preview_url: audioUrl,
-    album: {
-      images: [{ url: coverUrl }],
-    },
-    artists: [{ name: "You" }],
-  };
-
-  await addTrackToPlaylist(mySongsId, track);
+// 🗑️ Playlist verwijderen
+export async function deletePlaylist(playlistId: string) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  await deleteDoc(playlistRef);
 }
