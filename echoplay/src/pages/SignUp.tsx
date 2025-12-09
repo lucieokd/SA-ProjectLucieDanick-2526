@@ -12,9 +12,6 @@ const Signup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [day, setDay] = useState("");
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,25 +28,6 @@ const Signup: React.FC = () => {
       return;
     }
 
-    // check dag, maand, jaar
-    const dayNum = parseInt(day);
-    const monthNum = parseInt(month);
-    const yearNum = parseInt(year);
-
-    if (
-      isNaN(dayNum) ||
-      dayNum < 1 ||
-      dayNum > 31 ||
-      isNaN(monthNum) ||
-      monthNum < 1 ||
-      monthNum > 12 ||
-      isNaN(yearNum) ||
-      yearNum < minYear ||
-      yearNum > currentYear
-    ) {
-      setError("Please enter a valid date of birth.");
-      return;
-    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -57,7 +35,19 @@ const Signup: React.FC = () => {
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Maak eerst de auth gebruiker aan
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Maak nu het user document aan in Firestore
+      await createUser({
+        authId: user.uid,  // ⬅️ Voeg authId toe
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        favArtists: []  // ⬅️ Lege array voor favoriteArtist
+      });
+      
       console.log("Signup successful");
       navigate("/home");
     } catch (err: any) {
@@ -122,36 +112,6 @@ const Signup: React.FC = () => {
               placeholder="Last Name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-            />
-          </div>
-
-          <div className="d-flex gap-2 mb-3">
-            <input
-              type="number"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Day"
-              min={1}
-              max={31}
-              value={day}
-              onChange={(e) => setDay(e.target.value)}
-            />
-            <input
-              type="number"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Month"
-              min={1}
-              max={12}
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
-            <input
-              type="number"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Year"
-              min={minYear}
-              max={currentYear}
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
             />
           </div>
 

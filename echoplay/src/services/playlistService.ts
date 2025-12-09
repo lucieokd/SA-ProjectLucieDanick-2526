@@ -148,3 +148,17 @@ export async function removeTrackFromPlaylist(playlistId: string, track: any) {
     tracks: arrayRemove(track),
   });
 }
+
+// ✏️ Playlist hernoemen
+export async function renamePlaylist(playlistId: string, newName: string) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  await updateDoc(playlistRef, {
+    name: newName,
+  });
+}
+
+// 🗑️ Playlist verwijderen
+export async function deletePlaylist(playlistId: string) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  await deleteDoc(playlistRef);
+}

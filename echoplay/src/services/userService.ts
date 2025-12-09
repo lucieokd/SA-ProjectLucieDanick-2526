@@ -1,13 +1,20 @@
 import { db } from "../firebase/firebaseConfig";
 import {
-  collection,
   doc,
   setDoc,
   updateDoc,
-  query,
-  where,
-  getDocs,
+  getDoc,
 } from "firebase/firestore";
+
+
+type Artist = {
+  id: string;
+  name: string;
+  images?: { url: string }[];
+  genres?: string[];
+  followers?: { total: number };
+  popularity?: number;
+};
 
 export type User = {
   id?: string;
@@ -15,44 +22,47 @@ export type User = {
   email: string;
   firstName: string;
   lastName: string;
-  geboorteDag: number;
-  geboorteMaand: number;
-  geboorteJaar: number;
-  favoriteArtist?: string[];
+  favArtists: Artist[]
 };
 
 // Maak een nieuwe user aan in Firestore
 export async function createUser(userData: Omit<User, "id">): Promise<string> {
-  const docRef = doc(collection(db, "users"));
-  await setDoc(docRef, userData);
-  return docRef.id;
+  if (!userData.authId) throw new Error("authId is required");
+
+  const userRef = doc(db, "users", userData.authId);
+
+  await setDoc(userRef, {
+    ...userData,
+    favArtists: []
+  });
+
+  return userRef.id;
 }
 
-// Haal user op via authId
+
+// Haal user op via authId (document ID is gelijk aan authId)
 export async function getUserByAuthId(authId: string): Promise<User | null> {
-  const q = query(collection(db, "users"), where("authId", "==", authId));
-  const querySnapshot = await getDocs(q);
+  const userDocRef = doc(db, "users", authId);
+  const userDoc = await getDoc(userDocRef);
   
-  if (querySnapshot.empty) {
+  if (!userDoc.exists()) {
     return null;
   }
   
-  const doc = querySnapshot.docs[0];
   return {
-    id: doc.id,
-    ...doc.data(),
+    id: userDoc.id,
+    ...userDoc.data(),
   } as User;
 }
 
-// Update user data
+// Update user data (document ID is gelijk aan authId)
 export async function updateUser(authId: string, updates: Partial<User>): Promise<void> {
-  const q = query(collection(db, "users"), where("authId", "==", authId));
-  const querySnapshot = await getDocs(q);
+  const userDocRef = doc(db, "users", authId);
+  const userDoc = await getDoc(userDocRef);
   
-  if (querySnapshot.empty) {
+  if (!userDoc.exists()) {
     throw new Error("User not found");
   }
   
-  const docRef = doc(db, "users", querySnapshot.docs[0].id);
-  await updateDoc(docRef, updates);
+  await updateDoc(userDocRef, updates);
 }

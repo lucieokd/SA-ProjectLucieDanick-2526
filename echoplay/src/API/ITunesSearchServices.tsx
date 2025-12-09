@@ -18,9 +18,17 @@ export async function ITunesFetchArtist(artist: string, limit: number = 1) {
     return await response.json();
 }
 
-export async function getTracksFromITunes(artists: string[] = [], genres: string[] = [], limit: number = 150) {
+export async function getTracksFromITunes(artists: string[] = [], limit: number = 150) {
+  // Als er geen artiesten zijn, gebruik default artiesten
   if (artists.length === 0) {
-    throw new Error('Geen artiesten opgegeven voor iTunes search');
+    const defaultArtists = [
+      'Taylor Swift',
+      'Drake',
+      'Rihanna',
+      'Beyonce',
+      'The Weeknd'
+    ];
+    artists = defaultArtists;
   }
   
   const allTracks: any[] = [];
