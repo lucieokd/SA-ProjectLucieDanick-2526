@@ -17,6 +17,7 @@ import PlaylistDetails from "./pages/PlaylistDetails";
 import ArtistInfo from "./pages/ArtistInfo";
 import SearchResults from "./pages/SearchResults";
 import SearchDetails from "./pages/SearchDetails";
+import Startupscreen from "./pages/Startupscreen";
 
 function App() {
   const [theme, setTheme] = useState<string>(() => {
@@ -43,6 +44,7 @@ function App() {
             {/* Login-pagina zonder layout */}
             <Route path="/" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/startup" element={<Startupscreen />} />
             <Route path="/requestcode" element={<RequestCode />} />
             <Route path="/verifycode" element={<VerifyCode />} />
 
