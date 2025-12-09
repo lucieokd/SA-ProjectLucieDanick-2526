@@ -1,7 +1,7 @@
-import React, { useState, FormEvent, ChangeEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
 
@@ -18,9 +18,18 @@ const Signup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  // huidige jaartal
   const currentYear = new Date().getFullYear();
-  const minYear = currentYear - 90; // maximaal 90 jaar geleden
+  const minYear = currentYear - 90;
+
+  const onGoogleSignup = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      navigate("/home");
+    } catch (err: any) {
+      console.error(err);
+      setError("Google authentication failed. Please try again.");
+    }
+  };
 
   const onSignUpClick = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,7 +39,6 @@ const Signup: React.FC = () => {
       return;
     }
 
-    // check dag, maand, jaar
     const dayNum = parseInt(day);
     const monthNum = parseInt(month);
     const yearNum = parseInt(year);
@@ -57,10 +65,9 @@ const Signup: React.FC = () => {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      console.log("Signup successful");
       navigate("/home");
     } catch (err: any) {
-      console.error("Signup failed:", err);
+      console.error(err);
       switch (err.code) {
         case "auth/email-already-in-use":
           setError("This email is already registered.");
@@ -81,100 +88,15 @@ const Signup: React.FC = () => {
     <div className="d-flex justify-content-center align-items-center w-100 vh-100 bg-light">
       <div
         className="card shadow p-4 w-100"
-        style={{
-          maxWidth: "400px",
-          borderRadius: "20px",
-          backgroundColor: "white",
-        }}
+        style={{ maxWidth: "400px", borderRadius: "20px" }}
       >
         <div className="text-center mb-4">
-          <img
-            src="/logo.png"
-            alt="EchoPlay Logo"
-            className="img-fluid mb-2"
-            style={{ width: "70px" }}
-          />
+          <img src="/logo.png" alt="EchoPlay Logo" style={{ width: "70px" }} />
           <h5 className="fw-bold">Create your echoplay account</h5>
         </div>
 
         <form onSubmit={onSignUpClick}>
-          <div className="mb-3">
-            <input
-              type="email"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="john.doe@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="d-flex gap-2 mb-3">
-            <input
-              type="text"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-            <input
-              type="text"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Last Name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
-          </div>
-
-          {/* ✅ dag/maand/jaar veld met nummer-validatie */}
-          <div className="d-flex gap-2 mb-3">
-            <input
-              type="number"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Day"
-              min={1}
-              max={31}
-              value={day}
-              onChange={(e) => setDay(e.target.value)}
-            />
-            <input
-              type="number"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Month"
-              min={1}
-              max={12}
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
-            <input
-              type="number"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Year"
-              min={minYear}
-              max={currentYear}
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            />
-          </div>
-
-          <div className="mb-3">
-            <input
-              type="password"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <div className="mb-4">
-            <input
-              type="password"
-              className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
+          {/* ... jouw bestaande form hier ... */}
 
           {error && <ErrorMessage text={error} />}
 
@@ -191,12 +113,21 @@ const Signup: React.FC = () => {
           </button>
         </form>
 
+        {/* ✔️ GOOGLE BUTTON */}
+        <button
+          type="button"
+          onClick={onGoogleSignup}
+          className="btn btn-light border w-100 rounded-pill mb-3 d-flex align-items-center justify-content-center"
+          style={{ gap: "10px" }}
+        >
+          <img src="/google-icon.webp" alt="Google" style={{ width: "20px" }} />
+          Continue with Google
+        </button>
+
         <p className="text-center text-muted mb-0">
           Already have an account?{" "}
           <button
-            type="button"
             className="btn btn-link fw-semibold p-0"
-            style={{ color: "#6c2bd9" }}
             onClick={() => navigate("/")}
           >
             Login
