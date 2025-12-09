@@ -19,6 +19,7 @@ const PlaylistDetails: React.FC = () => {
   const [activePlaylistModal, setActivePlaylistModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
   const PROTECTED = ["favorites", "my songs"];
 
@@ -95,6 +96,76 @@ const PlaylistDetails: React.FC = () => {
   if (!playlist) return <p>Playlist laden...</p>;
 
   const isProtected = PROTECTED.includes(playlist.name.toLowerCase());
+  const playSequential = (startIndex = 0) => {
+    if (!playlist?.tracks?.length) return;
+
+    const track = playlist.tracks[startIndex];
+    if (!track?.preview_url) return;
+
+    const audio = new Audio(track.preview_url);
+    audioRef.current = audio;
+    audio.crossOrigin = "anonymous";
+
+    setPlayingUrl(track.preview_url);
+    setCurrentIndex(startIndex);
+
+    audio.onended = () => {
+      const nextIndex = startIndex + 1;
+      if (playlist.tracks[nextIndex]) {
+        playSequential(nextIndex); // automatisch volgende
+      } else {
+        setPlayingUrl(null);
+        setCurrentIndex(null);
+      }
+    };
+
+    audio.play();
+  };
+
+  const playShuffle = () => {
+    if (!playlist?.tracks?.length) return;
+
+    const order = [...playlist.tracks]
+      .map((t, i) => i)
+      .sort(() => Math.random() - 0.5);
+
+    const playFromOrder = (idx = 0) => {
+      const trackIndex = order[idx];
+      const track = playlist.tracks[trackIndex];
+
+      if (!track?.preview_url) return;
+
+      const audio = new Audio(track.preview_url);
+      audioRef.current = audio;
+
+      setPlayingUrl(track.preview_url);
+      setCurrentIndex(trackIndex);
+
+      audio.onended = () => {
+        const next = idx + 1;
+        if (order[next] !== undefined) {
+          playFromOrder(next);
+        } else {
+          setPlayingUrl(null);
+          setCurrentIndex(null);
+        }
+      };
+
+      audio.play();
+    };
+
+    playFromOrder(0);
+  };
+
+  const stopPlayback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    setPlayingUrl(null);
+    setCurrentIndex(null);
+  };
 
   return (
     <div className="playlist-details-container">
@@ -132,6 +203,34 @@ const PlaylistDetails: React.FC = () => {
             <i className="bi bi-three-dots"></i>
           </button>
         )}
+      </div>
+
+      <div className="playlist-actions">
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (playingUrl) {
+              stopPlayback(); // muziek stoppen
+            } else {
+              playSequential(0); // playlist starten
+            }
+          }}
+        >
+          <i className="bi bi-play-fill"></i>
+        </button>
+
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (playingUrl) {
+              stopPlayback(); // stop als iets speelt
+            } else {
+              playShuffle(); // shuffle starten
+            }
+          }}
+        >
+          <i className="bi bi-shuffle"></i>
+        </button>
       </div>
 
       {/* Track list */}
