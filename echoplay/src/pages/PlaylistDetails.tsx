@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { subscribePlaylists, Playlist, removeTrackFromPlaylist } from "../services/playlistService";
+import { subscribePlaylists, Playlist, removeTrackFromPlaylist, renamePlaylist, deletePlaylist } from "../services/playlistService";
 import { getPreviewUrlFromITunes } from "../API/ITunesSearchServices";
+import ModalMenu from "../components/Playlist/ModalMenu";
 import "../styles/PlaylistDetails.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
@@ -12,10 +13,13 @@ const PlaylistDetails: React.FC = () => {
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
   const [tracksWithITunesPreview, setTracksWithITunesPreview] = useState<any[]>([]);
   const [loadingPreviews, setLoadingPreviews] = useState(false);
+  const [activePlaylistModal, setActivePlaylistModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
 
   const PROTECTED = ["favorites", "my songs"];
+  
+  const isProtected = playlist ? PROTECTED.includes(playlist.name.toLowerCase()) : false;
 
   /* -----------------------------
      Realtime playlist updates
@@ -78,11 +82,11 @@ const PlaylistDetails: React.FC = () => {
 
     if (audioRef.current) audioRef.current.pause();
 
-    const audio = new Audio(url);
+    const audio = new Audio(previewUrl);
     audioRef.current = audio;
     audio.crossOrigin = "anonymous";
     audio.onended = () => setPlayingUrl(null);
-    audio.play().then(() => setPlayingUrl(url));
+    audio.play().then(() => setPlayingUrl(previewUrl));
   };
 
   const handleRemoveTrack = async (track: any) => {
@@ -100,6 +104,54 @@ const PlaylistDetails: React.FC = () => {
         console.error("Error removing track:", error);
         alert("Fout bij verwijderen van nummer.");
       }
+    }
+  };
+
+  const openPlaylistModal = () => {
+    setActivePlaylistModal(true);
+  };
+
+  const closePlaylistModal = () => {
+    setActivePlaylistModal(false);
+  };
+
+  const handleRenamePlaylist = async () => {
+    if (!playlist || isProtected) {
+      alert("Deze playlist-naam kan niet bewerkt worden.");
+      closePlaylistModal();
+      return;
+    }
+    const newName = window.prompt("Nieuwe naam voor playlist:", playlist.name ?? "");
+    if (!newName || !newName.trim()) {
+      closePlaylistModal();
+      return;
+    }
+    try {
+      await renamePlaylist(playlist.id, newName.trim());
+    } catch (err) {
+      console.error(err);
+      alert("Kon playlist naam niet bijwerken.");
+    } finally {
+      closePlaylistModal();
+    }
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!playlist) return;
+    const ok = window.confirm(
+      `Weet je zeker dat je "${playlist.name}" wilt verwijderen? Dit kan niet ongedaan gemaakt worden.`
+    );
+    if (!ok) {
+      closePlaylistModal();
+      return;
+    }
+    try {
+      await deletePlaylist(playlist.id);
+      navigate(-1);
+    } catch (err) {
+      console.error(err);
+      alert("Kon playlist niet verwijderen.");
+      closePlaylistModal();
     }
   };
 
@@ -213,13 +265,6 @@ const PlaylistDetails: React.FC = () => {
         onRename={handleRenamePlaylist}
         onDelete={handleDeletePlaylist}
         disableRename={isProtected}
-      />
-
-      {/* Track Modal */}
-      <ModalMenu
-        show={!!activeTrackModal}
-        onClose={closeTrackModal}
-        onDelete={handleRemoveTrack} // geen onRename
       />
     </div>
   );

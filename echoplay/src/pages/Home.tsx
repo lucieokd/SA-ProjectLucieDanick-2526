@@ -4,7 +4,7 @@ import SongPreview from "../components/Home/SongPreview";
 
 const Home = () => {
   return (
-    <div className="home-container">
+    <div className="container-fluid px-0">
       <SongPreview />
     </div>
   );

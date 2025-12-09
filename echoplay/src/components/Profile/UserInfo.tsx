@@ -10,7 +10,9 @@ interface UserInfoProps {
   showApplicationSettings?: boolean;
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) => {
+const UserInfo: React.FC<UserInfoProps> = ({
+  showApplicationSettings = false,
+}) => {
   const { theme, setTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -21,17 +23,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
     voornaam: "",
     achternaam: "",
     email: "",
-    dag: "",
-    maand: "",
-    jaar: ""
   });
   const [formData, setFormData] = useState({
     voornaam: "",
     achternaam: "",
     email: "",
-    dag: "",
-    maand: "",
-    jaar: ""
   });
 
   // Haal user data op wanneer component mount
@@ -42,7 +38,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
           console.log("Fetching user data for UID:", user.uid);
           const userData = await getUserByAuthId(user.uid);
           console.log("User data received:", userData);
-          
+
           if (userData) {
             console.log("Setting form data:", {
               firstName: userData.firstName,
@@ -53,9 +49,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
               voornaam: userData.firstName || "",
               achternaam: userData.lastName || "",
               email: userData.email || "",
-              dag: userData.geboorteDag?.toString() || "",
-              maand: userData.geboorteMaand?.toString() || "",
-              jaar: userData.geboorteJaar?.toString() || "",
             };
             setFormData(initialData);
             setOriginalData(initialData);
@@ -63,16 +56,20 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
             setSuccess(null);
           } else {
             console.warn("No user data found in Firestore for UID:", user.uid);
-            setError("User profile not found. Please update your profile information.");
+            setError(
+              "User profile not found. Please update your profile information."
+            );
             // Set email from auth as fallback
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               email: user.email || "",
             }));
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
-          setError("Failed to load user profile. Please try refreshing the page.");
+          setError(
+            "Failed to load user profile. Please try refreshing the page."
+          );
         } finally {
           setLoading(false);
         }
@@ -94,18 +91,18 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === "fullName") {
       const parts = value.trim().split(/\s+/);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         voornaam: parts[0] || "",
-        achternaam: parts.slice(1).join(" ") || ""
+        achternaam: parts.slice(1).join(" ") || "",
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -130,27 +127,13 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
     if (!formData.achternaam.trim()) {
       return "Achternaam is verplicht";
     }
-    
-    const dag = parseInt(formData.dag);
-    const maand = parseInt(formData.maand);
-    const jaar = parseInt(formData.jaar);
-    
-    if (formData.dag && (dag < 1 || dag > 31)) {
-      return "Dag moet tussen 1 en 31 zijn";
-    }
-    if (formData.maand && (maand < 1 || maand > 12)) {
-      return "Maand moet tussen 1 en 12 zijn";
-    }
-    if (formData.jaar && (jaar < 1900 || jaar > new Date().getFullYear())) {
-      return `Jaar moet tussen 1900 en ${new Date().getFullYear()} zijn`;
-    }
-    
+
     return null;
   };
 
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const user = auth.currentUser;
     if (!user) {
       setError("Geen gebruiker ingelogd");
@@ -169,27 +152,21 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
         firstName: formData.voornaam.trim(),
         lastName: formData.achternaam.trim(),
       };
-
-      // Alleen geboortedatum toevoegen als alle velden ingevuld zijn
-      if (formData.dag && formData.maand && formData.jaar) {
-        updateData.geboorteDag = parseInt(formData.dag);
-        updateData.geboorteMaand = parseInt(formData.maand);
-        updateData.geboorteJaar = parseInt(formData.jaar);
-      }
-
       await updateUser(user.uid, updateData);
-      
+
       // Update ook originalData zodat cancel werkt met nieuwe data
       setOriginalData(formData);
       setIsEditing(false);
       setError(null);
       setSuccess("Profiel succesvol bijgewerkt!");
-      
+
       // Verberg success message na 3 seconden
       setTimeout(() => setSuccess(null), 3000);
     } catch (error: any) {
       console.error("Error updating user data:", error);
-      setError(error.message || "Fout bij bijwerken van profiel. Probeer het opnieuw.");
+      setError(
+        error.message || "Fout bij bijwerken van profiel. Probeer het opnieuw."
+      );
     }
   };
 
@@ -204,7 +181,10 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "200px" }}
+      >
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -218,9 +198,9 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
         <div className="mb-4">
           <label className="form-label fw-semibold">Theme preferences</label>
           <div className="d-flex align-items-center">
-            <button 
-              type="button" 
-              className="btn btn-link p-2" 
+            <button
+              type="button"
+              className="btn btn-link p-2"
               onClick={handleChangeMode}
               aria-label="Toggle theme"
               style={{ fontSize: "1.5rem", color: "#6c2bd9" }}
@@ -229,11 +209,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
             </button>
           </div>
         </div>
-        <button 
-          type="button" 
-          className="btn btn-danger" 
-          onClick={handleLogout}
-        >
+        <button type="button" className="btn btn-danger" onClick={handleLogout}>
           Logout
         </button>
       </div>
@@ -255,12 +231,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
       <form onSubmit={handleSaveChanges}>
         <div className="row mb-3">
           <div className="col-md-6 mb-3 mb-md-0">
-            <label htmlFor="voornaam" className="form-label fw-semibold">Voornaam</label>
+            <label htmlFor="voornaam" className="form-label fw-semibold">
+              Voornaam
+            </label>
             <input
               type="text"
               id="voornaam"
               name="voornaam"
-              className={`form-control ${!isEditing ? 'bg-light' : ''}`}
+              className={`form-control ${!isEditing ? "bg-light" : ""}`}
               value={formData.voornaam}
               readOnly={!isEditing}
               onChange={handleInputChange}
@@ -269,12 +247,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
           </div>
 
           <div className="col-md-6">
-            <label htmlFor="achternaam" className="form-label fw-semibold">Achternaam</label>
+            <label htmlFor="achternaam" className="form-label fw-semibold">
+              Achternaam
+            </label>
             <input
               type="text"
               id="achternaam"
               name="achternaam"
-              className={`form-control ${!isEditing ? 'bg-light' : ''}`}
+              className={`form-control ${!isEditing ? "bg-light" : ""}`}
               value={formData.achternaam}
               readOnly={!isEditing}
               onChange={handleInputChange}
@@ -283,92 +263,43 @@ const UserInfo: React.FC<UserInfoProps> = ({ showApplicationSettings = false }) 
           </div>
         </div>
 
-        <div className="row mb-3">
-          <div className="col-md-6 mb-3 mb-md-0">
-            <label htmlFor="email" className="form-label fw-semibold">E-mail</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="form-control bg-light"
-              value={formData.email}
-              readOnly={true}
-              onChange={handleInputChange}
-            />
-            <small className="form-text text-muted">Dit is je inlog e-mailadres.</small>
-          </div>
-
-          <div className="col-md-6">
-            <label className="form-label fw-semibold">Geboortedatum</label>
-            <div className="d-flex gap-2">
-              <div className="flex-fill">
-                <input 
-                  type="number" 
-                  name="dag" 
-                  className={`form-control ${!isEditing ? 'bg-light' : ''}`}
-                  value={formData.dag} 
-                  readOnly={!isEditing} 
-                  onChange={handleInputChange}
-                  placeholder="Dag"
-                  min="1"
-                  max="31"
-                />
-                <small className="form-text text-muted d-block" style={{ fontSize: "0.75rem" }}>Dag</small>
-              </div>
-              <div className="flex-fill">
-                <input 
-                  type="number" 
-                  name="maand" 
-                  className={`form-control ${!isEditing ? 'bg-light' : ''}`}
-                  value={formData.maand} 
-                  readOnly={!isEditing} 
-                  onChange={handleInputChange}
-                  placeholder="Maand"
-                  min="1"
-                  max="12"
-                />
-                <small className="form-text text-muted d-block" style={{ fontSize: "0.75rem" }}>Maand</small>
-              </div>
-              <div className="flex-fill">
-                <input 
-                  type="number" 
-                  name="jaar" 
-                  className={`form-control ${!isEditing ? 'bg-light' : ''}`}
-                  value={formData.jaar} 
-                  readOnly={!isEditing} 
-                  onChange={handleInputChange}
-                  placeholder="Jaar"
-                  min="1900"
-                  max={new Date().getFullYear()}
-                />
-                <small className="form-text text-muted d-block" style={{ fontSize: "0.75rem" }}>Jaar</small>
-              </div>
-            </div>
-          </div>
+        <div className="col-md-12">
+          <label htmlFor="email" className="form-label fw-semibold">
+            E-mail
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            className="form-control bg-light"
+            value={formData.email}
+            readOnly={true}
+            onChange={handleInputChange}
+          />
+          <small className="form-text text-muted">
+            Dit is je inlog e-mailadres.
+          </small>
         </div>
 
         <div className="d-flex gap-2 mt-4">
           {!isEditing ? (
-            <button 
-              type="button" 
-              className="btn btn-primary" 
+            <button
+              type="button"
+              className="btn btn-primary"
               onClick={handleEdit}
             >
               Bewerken
             </button>
           ) : (
             <>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={handleCancel}
               >
                 Annuleren
               </button>
-              <button 
-                type="submit" 
-                className="btn btn-primary"
-              >
+              <button type="submit" className="btn btn-primary">
                 Opslaan
               </button>
             </>

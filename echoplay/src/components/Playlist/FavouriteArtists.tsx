@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const FavouriteArtists: React.FC = () => {
-  const { favourite_artists } = useFavouriteArtists();
+const FavouriteArtists = () => {
+  const { favArtists  } = useFavouriteArtists();
   const navigate = useNavigate();
 
   const handleArtistClick = (artistName: string) => {
     navigate(`/Artistinfo?artist=${encodeURIComponent(artistName)}`);
   };
 
-  if (favourite_artists.length === 0) {
+  if (favArtists.length === 0) {
     return (
       <div className="container py-4">
         <h3 className="fw-semibold mb-4">Favoriete Artiesten</h3>
@@ -23,10 +23,10 @@ const FavouriteArtists: React.FC = () => {
   return (
     <div className="container py-4">
       <h3 className="fw-semibold mb-4">Favoriete Artiesten</h3>
-      <p className="text-muted mb-4">Aantal artiesten: {favourite_artists.length}</p>
+      <p className="text-muted mb-4">Aantal artiesten: {favArtists.length}</p>
       
       <div className="row g-4">
-        {favourite_artists.map((artist) => (
+        {favArtists.map((artist) => (
           <div
             key={artist.id}
             className="col-md-3 col-sm-6 col-12"
@@ -55,9 +55,8 @@ const FavouriteArtists: React.FC = () => {
                     alt={artist.name}
                     className="img-fluid rounded-circle mb-3"
                     style={{
-                      width: "150px",
-                      height: "150px",
-                      objectFit: "cover",
+                      width: "500px",
+                      height: "220px",
                     }}
                   />
                 ) : (

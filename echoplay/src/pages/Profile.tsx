@@ -8,8 +8,8 @@ const Profile = () => {
           <h1 className="mb-4">Profile & Settings</h1>
         </div>
       </div>
-      <div className="row">
-        <div className="col-12 col-lg-10 col-xl-8">
+      <div className="row justify-content-center">
+        <div className="col-12 col-lg-11 col-xl-10 col-xxl-9">
           <div className="card mb-4">
             <div className="card-body">
               <h2 className="card-title border-bottom pb-3 mb-4">Account Information</h2>
