@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { getUserByAuthId, createUser } from "../services/userService";
@@ -21,12 +21,16 @@ const Login: React.FC = () => {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      
+
       // Controleer of er al een user document bestaat
       const existingUser = await getUserByAuthId(user.uid);
-      
+
       // Als er geen user document bestaat, maak er een aan
       if (!existingUser) {
         // Probeer displayName te gebruiken als die bestaat, anders gebruik email
@@ -34,18 +38,18 @@ const Login: React.FC = () => {
         const nameParts = displayName.split(" ");
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ") || "";
-        
+
         await createUser({
           authId: user.uid,
           email: user.email || email,
           firstName: firstName,
           lastName: lastName,
-          favArtists: []
+          favArtists: [],
         });
-        
+
         console.log("User document aangemaakt voor bestaande gebruiker");
       }
-      
+
       console.log("Login successful!");
       navigate("/home");
     } catch (err: any) {
@@ -66,6 +70,17 @@ const Login: React.FC = () => {
     }
   };
 
+  // ➕ Google Login functie
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      navigate("/home");
+    } catch (err) {
+      console.error("Google login failed:", err);
+      setError("Google authentication failed. Please try again.");
+    }
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center w-100 vh-100">
       <div
@@ -78,7 +93,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center mb-4">
           <img
-            src={logo}
+            src="/src/assets/logo.png"
             alt="Echoplay Logo"
             className="img-fluid mb-2"
             style={{ width: "80px" }}
@@ -111,6 +126,7 @@ const Login: React.FC = () => {
             <p className="text-danger text-center fw-semibold">{error}</p>
           )}
 
+          {/* Normale login knop */}
           <button
             type="submit"
             className="btn btn-lg rounded-pill w-100 fw-semibold mb-3"
@@ -122,18 +138,29 @@ const Login: React.FC = () => {
           >
             Sign In
           </button>
-
-          <div className="text-center">
-            <button
-              type="button"
-              className="btn btn-link text-decoration-none"
-              style={{ color: "#6c2bd9" }}
-              onClick={() => navigate("/requestcode")}
-            >
-              Login with code
-            </button>
-          </div>
         </form>
+
+        {/* ➕ Google Login knop */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="btn btn-light border w-100 rounded-pill mb-3 d-flex align-items-center justify-content-center"
+          style={{ gap: "10px" }}
+        >
+          <img src="/google-icon.webp" alt="Google" style={{ width: "20px" }} />
+          Continue with Google
+        </button>
+
+        <div className="text-center">
+          <button
+            type="button"
+            className="btn btn-link text-decoration-none"
+            style={{ color: "#6c2bd9" }}
+            onClick={() => navigate("/requestcode")}
+          >
+            Login with code
+          </button>
+        </div>
 
         <p className="text-center mt-4 mb-0 text-muted">
           Don’t have an account?{" "}
