@@ -61,7 +61,7 @@ const Signup: React.FC = () => {
       });
 
       console.log("Signup successful");
-      navigate("/home");
+      navigate("/startup");
     } catch (err: any) {
       console.error(err);
       switch (err.code) {

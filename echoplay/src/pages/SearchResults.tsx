@@ -74,6 +74,32 @@ const SearchResults: React.FC = () => {
     navigate(`/search-details?track=${trackData}${queryParam}`);
   };
 
+  const handleArtistSearch = async (artistName: string) => {
+    try {
+      const tokenData = await getToken();
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+          artistName
+        )}&type=artist`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + tokenData.access_token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const artistNameFromSpotify = data.artists.items[0]?.name || artistName;
+        navigate(`/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`);
+      }
+    } catch (error) {
+      console.error("Fout bij het ophalen van artiestgegevens:", error);
+    }
+  };
+
   return (
     <div className="container-fluid px-4 py-4">
       <div className="row">

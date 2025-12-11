@@ -5,6 +5,7 @@ import {
   AiOutlineSearch,
   AiOutlineSetting,
   AiOutlinePlusCircle,
+  AiOutlineInfoCircle,
 } from "react-icons/ai";
 import { BsMusicNoteList } from "react-icons/bs";
 import "./Sidebar.css";
@@ -22,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onAddClick }) => {
     { path: "/search", label: "Search", icon: <AiOutlineSearch /> },
     { path: "/library", label: "Playlists", icon: <BsMusicNoteList /> },
     { path: "/profile", label: "Profile & Settings", icon: <AiOutlineSetting /> },
+    { path: "/about", label: "About", icon: <AiOutlineInfoCircle /> },
   ];
 
   const isActive = (path: string) => {

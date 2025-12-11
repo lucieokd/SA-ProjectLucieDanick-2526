@@ -17,6 +17,8 @@ import PlaylistDetails from "./pages/PlaylistDetails";
 import ArtistInfo from "./pages/ArtistInfo";
 import SearchResults from "./pages/SearchResults";
 import SearchDetails from "./pages/SearchDetails";
+import Startupscreen from "./pages/Startupscreen";
+import About from "./pages/About";
 
 function App() {
   const [theme, setTheme] = useState<string>(() => {
@@ -43,6 +45,7 @@ function App() {
             {/* Login-pagina zonder layout */}
             <Route path="/" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/startup" element={<Startupscreen />} />
             <Route path="/requestcode" element={<RequestCode />} />
             <Route path="/verifycode" element={<VerifyCode />} />
 
@@ -54,6 +57,7 @@ function App() {
               <Route path="/search-results" element={<SearchResults />} />
               <Route path="/search-details" element={<SearchDetails />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/about" element={<About />} />
               <Route path="/upload" element={<UploadSongPage />} />
               <Route path="/create-playlist" element={<CreatePlaylistPage />} />
               <Route path="/Artistinfo" element={<ArtistInfo />} />

@@ -17,9 +17,14 @@
 * erros fixen + omzetten naar TS: 2u
 
 ## Week 8 :
-* library pagina's + add pop + opzetten firestore (op school met danick) : 5
+* library pagina's + add pop + opzetten firestore (op school met danick) : 5 uur
 
 ## Week 9 :
 * library pagina: nummers toevoegen aan de favorites playlist : 2u
 * website online gezet : 40 min
 * dataopslag : 1uur
+
+## Week 10 :
+* service opslag debug:3 uur
+* aanpassen van library pafina (playfuncties, shuffle): 1 uur
+* google authentication : 30 min
