@@ -28,3 +28,10 @@
 * service opslag debug:3 uur
 * aanpassen van library pafina (playfuncties, shuffle): 1 uur
 * google authentication : 30 min
+
+## Week 11 :
+* cross fade functie: 10 min
+* player toegevoegd:
+* google authentication : 30 min
+* logica voor de shuffle mode + highlight track: 1 uur
+* upload pagina: redirect naar library+ error handling : 5 uur
