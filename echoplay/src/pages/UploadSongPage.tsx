@@ -97,50 +97,43 @@ const UploadSongPage: React.FC = () => {
       setLoading(false);
       return;
     }
-    console.log("Current user:", auth.currentUser);
-    console.log("Cover file:", coverFile);
-    console.log("Audio file:", audioFile);
-    console.log("Cover type:", coverFile.type, "size:", coverFile.size);
-    console.log("Audio type:", audioFile.type, "size:", audioFile.size);
 
     try {
       await auth.currentUser.getIdToken(true);
 
+      // Upload cover
       const coverRef = ref(
         storage,
         `covers/${Date.now()}_${encodeURIComponent(coverFile.name)}`
       );
-
       await uploadBytes(coverRef, coverFile);
       const coverUrl = await getDownloadURL(coverRef);
 
+      // Upload audio
       const audioRef = ref(
         storage,
         `songs/${Date.now()}_${encodeURIComponent(audioFile.name)}`
       );
       await uploadBytes(audioRef, audioFile);
-
       const audioUrl = await getDownloadURL(audioRef);
 
+      // Haal of maak My Songs playlist
       const mySongsId = await getOrCreateMySongs();
 
+      // 🔹 Track object met expliciete naam en cover
       const track = {
         id: crypto.randomUUID(),
-        name: songName,
-        artists: [{ name: "You" }],
+        name: songName, // gebruik de gekozen naam
+        artists: [{ name: "You" }], // default artist
         preview_url: audioUrl,
-        album: {
-          images: [{ url: coverUrl }],
-        },
-        userId: auth.currentUser?.uid,
+        image: coverUrl, // gebruik de cover URL
+        userId: auth.currentUser.uid,
       };
 
       await addTrackToPlaylist(mySongsId, track);
 
-      setSuccess("Song uploaded successfully 🎵");
-      setTimeout(() => {
-        navigate(`/playlist/${mySongsId}`);
-      }, 3000);
+      setSuccess("Song uploaded successfully");
+      setTimeout(() => navigate(`/playlist/${mySongsId}`), 2000);
 
       setSongName("");
       setCoverFile(null);
