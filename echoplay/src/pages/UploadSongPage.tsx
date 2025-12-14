@@ -121,12 +121,16 @@ const UploadSongPage: React.FC = () => {
       const mySongsId = await getOrCreateMySongs();
 
       // 🔹 Track object met expliciete naam en cover
+
       const track = {
         id: crypto.randomUUID(),
-        name: songName, // gebruik de gekozen naam
-        artists: [{ name: "You" }], // default artist
+        name: songName,
+        artists: [{ name: "You" }],
         preview_url: audioUrl,
-        image: coverUrl, // gebruik de cover URL
+        image: coverUrl,
+        album: {
+          images: [{ url: coverUrl }],
+        },
         userId: auth.currentUser.uid,
       };
 
