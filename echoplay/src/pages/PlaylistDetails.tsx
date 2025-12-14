@@ -15,6 +15,10 @@ const PlaylistDetails: React.FC = () => {
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [allPlaylists, setAllPlaylists] = useState<Playlist[]>([]);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [shuffleEnabled, setShuffleEnabled] = useState(false);
+  const [playAfterShuffle, setPlayAfterShuffle] = useState(false);
+  const [playOrder, setPlayOrder] = useState<number[]>([]);
   const [activeTrackModal, setActiveTrackModal] = useState<any | null>(null);
   const [activePlaylistModal, setActivePlaylistModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -36,15 +40,24 @@ const PlaylistDetails: React.FC = () => {
     setPlaylist(allPlaylists.find((p) => p.id === id) || null);
   }, [allPlaylists, id]);
 
+  useEffect(() => {
+    if (playAfterShuffle) {
+      playPlaylist(); // nu shuffleEnabled is up-to-date
+      setPlayAfterShuffle(false);
+    }
+  }, [shuffleEnabled]);
+
   /* -----------------------------
      Play / Pause track
   ----------------------------- */
-  const togglePlay = (url?: string | null) => {
+  const togglePlay = (url?: string | null, idx?: number) => {
     if (!url) return;
 
     if (playingUrl === url) {
       audioRef.current?.pause();
       setPlayingUrl(null);
+      setCurrentIndex(null); // <-- dit ontbreekt
+      setIsPlaying(false);
       return;
     }
 
@@ -53,8 +66,18 @@ const PlaylistDetails: React.FC = () => {
     const audio = new Audio(url);
     audioRef.current = audio;
     audio.crossOrigin = "anonymous";
-    audio.onended = () => setPlayingUrl(null);
-    audio.play().then(() => setPlayingUrl(url));
+
+    audio.onended = () => {
+      setPlayingUrl(null);
+      setCurrentIndex(null);
+      setIsPlaying(false);
+    };
+
+    audio.play().then(() => {
+      setPlayingUrl(url);
+      setCurrentIndex(idx ?? null); // <-- index instellen
+      setIsPlaying(true);
+    });
   };
 
   /* -----------------------------
@@ -96,65 +119,44 @@ const PlaylistDetails: React.FC = () => {
   if (!playlist) return <p>Playlist laden...</p>;
 
   const isProtected = PROTECTED.includes(playlist.name.toLowerCase());
-  const playSequential = (startIndex = 0) => {
+  const playPlaylist = () => {
     if (!playlist?.tracks?.length) return;
 
-    const track = playlist.tracks[startIndex];
-    if (!track?.preview_url) return;
+    const order = shuffleEnabled
+      ? [...playlist.tracks].map((_, i) => i).sort(() => Math.random() - 0.5)
+      : [...playlist.tracks].map((_, i) => i);
 
-    const audio = new Audio(track.preview_url);
-    audioRef.current = audio;
-    audio.crossOrigin = "anonymous";
+    setPlayOrder(order);
 
-    setPlayingUrl(track.preview_url);
-    setCurrentIndex(startIndex);
-
-    audio.onended = () => {
-      const nextIndex = startIndex + 1;
-      if (playlist.tracks[nextIndex]) {
-        playSequential(nextIndex); // automatisch volgende
-      } else {
-        setPlayingUrl(null);
-        setCurrentIndex(null);
+    const playTrackAtOrderIndex = (orderIdx: number) => {
+      const trackIdx = order[orderIdx];
+      const track = playlist.tracks[trackIdx];
+      if (!track?.preview_url) {
+        if (orderIdx + 1 < order.length) playTrackAtOrderIndex(orderIdx + 1);
+        return;
       }
-    };
 
-    audio.play();
-  };
-
-  const playShuffle = () => {
-    if (!playlist?.tracks?.length) return;
-
-    const order = [...playlist.tracks]
-      .map((t, i) => i)
-      .sort(() => Math.random() - 0.5);
-
-    const playFromOrder = (idx = 0) => {
-      const trackIndex = order[idx];
-      const track = playlist.tracks[trackIndex];
-
-      if (!track?.preview_url) return;
-
+      if (audioRef.current) audioRef.current.pause();
       const audio = new Audio(track.preview_url);
       audioRef.current = audio;
-
+      audio.crossOrigin = "anonymous";
       setPlayingUrl(track.preview_url);
-      setCurrentIndex(trackIndex);
+      setCurrentIndex(trackIdx);
+      setIsPlaying(true);
 
       audio.onended = () => {
-        const next = idx + 1;
-        if (order[next] !== undefined) {
-          playFromOrder(next);
-        } else {
+        if (orderIdx + 1 < order.length) playTrackAtOrderIndex(orderIdx + 1);
+        else {
           setPlayingUrl(null);
           setCurrentIndex(null);
+          setIsPlaying(false);
         }
       };
 
       audio.play();
     };
 
-    playFromOrder(0);
+    playTrackAtOrderIndex(0); // altijd start bij eerste in order
   };
 
   const stopPlayback = () => {
@@ -210,23 +212,25 @@ const PlaylistDetails: React.FC = () => {
           className="btn btn-primary"
           onClick={() => {
             if (playingUrl) {
-              stopPlayback(); // muziek stoppen
+              audioRef.current?.pause();
+              setPlayingUrl(null);
+              setCurrentIndex(null);
+              setIsPlaying(false);
             } else {
-              playSequential(0); // playlist starten
+              playPlaylist();
             }
           }}
         >
-          <i className="bi bi-play-fill"></i>
+          <i
+            className={`bi ${playingUrl ? "bi-pause-fill" : "bi-play-fill"}`}
+          ></i>
         </button>
 
         <button
-          className="btn btn-primary"
+          className={`btn ${shuffleEnabled ? "shuffle-active" : ""}`}
           onClick={() => {
-            if (playingUrl) {
-              stopPlayback(); // stop als iets speelt
-            } else {
-              playShuffle(); // shuffle starten
-            }
+            setShuffleEnabled((prev) => !prev);
+            setPlayAfterShuffle(true);
           }}
         >
           <i className="bi bi-shuffle"></i>
@@ -238,8 +242,10 @@ const PlaylistDetails: React.FC = () => {
         {(playlist.tracks ?? []).map((t, idx) => (
           <div
             key={t.id || idx}
-            className="track-row"
-            onClick={() => t.preview_url && togglePlay(t.preview_url)}
+            className={`track-row ${
+              currentIndex === idx ? "active-track" : ""
+            }`}
+            onClick={() => t.preview_url && togglePlay(t.preview_url, idx)}
           >
             <div className="track-index">{idx + 1}</div>
             <div className="track-thumb">

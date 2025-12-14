@@ -118,10 +118,6 @@ const Library: React.FC = () => {
       <div className="library-header">
         <h1 className="library-title">Library</h1>
         <div className="header-actions">
-          <div className="header-icons">
-            <AiOutlineSearch className="header-icon" size={22} />
-            <BsThreeDotsVertical className="header-icon" size={22} />
-          </div>
           <button
             className="btn add-main-btn"
             onClick={() => setShowAddPopup(true)}
