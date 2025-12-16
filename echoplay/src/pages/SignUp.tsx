@@ -71,6 +71,7 @@ const Signup: React.FC = () => {
         console.error("Failed to get or create My Songs playlist");
         await getOrCreateMySongs(user.uid);
       }
+
       console.log("Signup successful");
       navigate("/startup");
     } catch (err: any) {
