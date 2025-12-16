@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["http://localhost:5173", "https://echoplay-music.netlify.app/"],
+    "method": ["GET", "POST", "PUT", "OPTIONS"],
+    "maxAgeSeconds": 3600
+  }
+]
