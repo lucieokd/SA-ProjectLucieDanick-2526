@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
 import { createUser } from "../services/userService";
 import { getOrCreateFavorites, getOrCreateMySongs } from "../services/playlistService";
+import logo from "/assets/logo.png";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ const Signup: React.FC = () => {
         }}
       >
         <div className="text-center mb-4">
-          <img src="/logo.png" alt="EchoPlay Logo" style={{ width: "70px" }} />
+          <img src={logo} alt="EchoPlay Logo" style={{ width: "70px" }} />
           <h5 className="fw-bold">Create your echoplay account</h5>
         </div>
 
