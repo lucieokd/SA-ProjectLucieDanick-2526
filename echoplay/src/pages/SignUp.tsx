@@ -5,6 +5,7 @@ import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
 import { createUser } from "../services/userService";
+import { getOrCreateFavorites, getOrCreateMySongs } from "../services/playlistService";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -60,6 +61,9 @@ const Signup: React.FC = () => {
         favArtists: [], // ⬅️ Lege array voor favoriteArtist
       });
 
+      await getOrCreateFavorites(user.uid);
+      await getOrCreateMySongs(user.uid);
+      
       console.log("Signup successful");
       navigate("/startup");
     } catch (err: any) {

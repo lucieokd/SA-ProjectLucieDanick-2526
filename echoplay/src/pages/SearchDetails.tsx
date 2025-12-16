@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import SearchedSong from "../components/Search/SearchedSong";
 import ErrorMessage from "../components/ErrorMessage";
-import Searchbar from "../components/Search/Searchbar";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -66,28 +65,24 @@ const SearchDetails: React.FC = () => {
         </div>
       </div>
       <div className="row">
-        <div className="col-12 col-lg-10 col-xl-8 mx-auto">
-          {error && (
-            <div className="mb-3">
-              <ErrorMessage text={error} />
-            </div>
-          )}
+        {error && (
+          <div className="col-12 mb-3">
+            <ErrorMessage text={error} />
+          </div>
+        )}
 
-          {track && (
-            <div className="row g-3 mt-3">
-              <SearchedSong key={track.id} track={track} />
-            </div>
-          )}
+        {track && (
+          <SearchedSong key={track.id} track={track} />
+        )}
 
-          {!track && !error && (
-            <div className="text-center text-muted py-5">
-              <div className="spinner-border text-primary mb-2" role="status">
-                <span className="visually-hidden">Laden...</span>
-              </div>
-              <p className="mb-0">Track informatie laden...</p>
+        {!track && !error && (
+          <div className="col-12 text-center text-muted py-5">
+            <div className="spinner-border text-primary mb-2" role="status">
+              <span className="visually-hidden">Laden...</span>
             </div>
-          )}
-        </div>
+            <p className="mb-0">Track informatie laden...</p>
+          </div>
+        )}
       </div>
     </div>
   );

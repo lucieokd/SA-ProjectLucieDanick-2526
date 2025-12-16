@@ -129,6 +129,7 @@ export async function getTracksFromITunes(artists: string[] = [], limit: number 
   }
 }
 
+// search
 export async function getPreviewUrlFromITunes(trackName: string, artistName: string): Promise<string | null> {
   try {
     const searchTerm = `${trackName} ${artistName}`;
@@ -178,4 +179,35 @@ export async function getPreviewUrlFromITunes(trackName: string, artistName: str
     console.error('Error fetching preview URL from iTunes:', error);
     return null;
   }
+}
+
+export async function fetchMetadataByArtist(artist: string) {
+  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(
+    artist
+  )}&media=music&entity=song&limit=25`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+  const artistLower = artist.toLowerCase();
+
+  return data.results
+    .filter((r: any) =>
+    r.artistName && r.artistName.toLowerCase().includes(artistLower)
+  )
+    .map((r: any) => ({
+    id: r.trackId?.toString(),
+    name: r.trackName,
+    artist: r.artistName,
+    album: r.collectionName,
+    artwork: r.artworkUrl100?.replace("100x100", "640x640") || null,
+    preview_url: undefined, // 👈 belangrijk
+  }));
+};
+
+export async function fetchPreviewUrl(trackId: string) {
+  const url = `https://itunes.apple.com/lookup?id=${trackId}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  return data.results[0]?.previewUrl || null;
 }

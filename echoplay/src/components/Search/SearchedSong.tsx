@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { getToken } from "../../API/SpotifyCred";
 import { getPreviewUrlFromITunes } from "../../API/ITunesSearchServices";
 import {
-  createPlaylist,
+  getOrCreateFavorites,
   findPlaylistByName,
   addTrackToPlaylist,
   subscribePlaylists,
   Playlist,
 } from "../../services/playlistService";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import ErrorMessage from "../ErrorMessage";
+import { auth } from "../../firebase/firebaseConfig";
+
 
 interface Track {
   id: string;
@@ -31,10 +34,15 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const userId = auth.currentUser?.uid;
+  let [errorText, setErrorText] = useState("");
+
 
   useEffect(() => {
-    const unsub = subscribePlaylists((items) => setPlaylists(items));
-    return () => unsub();
+    const unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
+    setPlaylists(fetchedPlaylists);
+    });
+    return () => unsubscribe();
   }, []);
 
   // Haal preview URL op wanneer gebruiker op play klikt
@@ -57,11 +65,12 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
         // Start playback direct na het ophalen
         setTimeout(() => togglePlayback(), 100);
       } else {
-        alert("Geen preview beschikbaar voor dit nummer.");
+        setErrorText("Geen preview beschikbaar voor dit nummer.");
       }
     } catch (error) {
       console.error("Error fetching preview:", error);
-      alert("Fout bij ophalen preview.");
+      setErrorText("Fout bij ophalen preview.");
+
     } finally {
       setLoadingPreview(false);
     }
@@ -81,7 +90,7 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
       }
     } catch (err) {
       console.error("Error playing audio:", err);
-      alert("Kon audio niet afspelen.");
+      setErrorText("Kon audio niet afspelen.");
     }
   };
 
@@ -114,20 +123,18 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
   const handleFavorite = async () => {
     try {
       const favName = "Favorites";
-      let favPlaylist = await findPlaylistByName(favName);
+      let favPlaylist = await findPlaylistByName(userId,favName);
+
       if (!favPlaylist) {
-        const newId = await createPlaylist({
-          name: favName,
-          description: "Your favorite songs",
-          imageFile: null,
-        });
-        favPlaylist = { id: newId } as Playlist;
+        const newId = await getOrCreateFavorites(userId);
+        favPlaylist = { id: newId };
       }
+
       await addTrackToPlaylist(favPlaylist.id, { ...track, preview_url: previewUrl });
-      alert("Toegevoegd aan favorieten!");
+      setErrorText("Toegevoegd aan playlist");
     } catch (err) {
       console.error("Error adding to favorites:", err);
-      alert("Fout bij toevoegen aan favorieten.");
+      setErrorText("Fout bij het toevoegen");
     }
   };
 
@@ -224,6 +231,7 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
             </div>
           </div>
         </div>
+        <ErrorMessage text={errorText}/>
       </div>
 
       {/* Playlist Modal */}

@@ -5,6 +5,7 @@ import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { getUserByAuthId, createUser } from "../services/userService";
+import { getOrCreateFavorites, getOrCreateMySongs } from "../services/playlistService";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -46,10 +47,24 @@ const Login: React.FC = () => {
           lastName: lastName,
           favArtists: [],
         });
-
+        
+        await getOrCreateFavorites(user.uid);
+        await getOrCreateMySongs(user.uid);
         console.log("User document aangemaakt voor bestaande gebruiker");
       }
 
+      const favorietenPlaylist = await getOrCreateFavorites(user.uid);
+      if (!favorietenPlaylist) {
+        console.error("Failed to get or create Favorites playlist");
+        await getOrCreateFavorites(user.uid);
+      }
+
+      const mySongsPlaylist = await getOrCreateMySongs(user.uid);
+      if (!mySongsPlaylist) {
+        console.error("Failed to get or create My Songs playlist");
+        await getOrCreateMySongs(user.uid);
+      }
+      
       console.log("Login successful!");
       navigate("/home");
     } catch (err: any) {

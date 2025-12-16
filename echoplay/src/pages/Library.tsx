@@ -14,6 +14,8 @@ import "../styles/Library.css";
 import AddPopup from "../pages/AddPopup";
 import ModalMenu from "../components/Playlist/ModalMenu";
 import FavouriteArtists from "../components/Playlist/FavouriteArtists";
+import { auth } from "../firebase/firebaseConfig";
+
 
 const Library: React.FC = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -24,24 +26,22 @@ const Library: React.FC = () => {
 
   const navigate = useNavigate();
 
-  /* -----------------------------
-       Hooks
-  ------------------------------ */
+
+
   useEffect(() => {
-    const unsub = subscribePlaylists((items) => setPlaylists(items));
-    return () => unsub();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const unsubscribe = subscribePlaylists(user.uid, setPlaylists);
+    return () => unsubscribe();
   }, []);
 
-  // Close menu when clicking elsewhere
   useEffect(() => {
     const onDocClick = () => setActiveModalId(null);
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
-  /* -----------------------------
-       Modal helpers
-  ------------------------------ */
   const openModal = (p: Playlist) => {
     setModalPlaylist(p);
     setActiveModalId(p.id);
@@ -52,9 +52,6 @@ const Library: React.FC = () => {
     setModalPlaylist(null);
   };
 
-  /* -----------------------------
-       Rename / Delete helpers
-  ------------------------------ */
   const pinnedName = "Favorites";
   const mySongsName = "My Songs";
 
@@ -102,9 +99,6 @@ const Library: React.FC = () => {
     }
   };
 
-  /* -----------------------------
-       Pinned playlists
-  ------------------------------ */
   const favorites = playlists.find(
     (p) => p.name?.toLowerCase() === pinnedName.toLowerCase()
   );
@@ -114,7 +108,6 @@ const Library: React.FC = () => {
 
   return (
     <div className="library-container">
-      {/* HEADER */}
       <div className="library-header">
         <h1 className="library-title">Library</h1>
         <div className="header-actions">
@@ -129,7 +122,6 @@ const Library: React.FC = () => {
         </div>
       </div>
 
-      {/* TABS */}
       <div className="library-tabs">
         {["Playlists", "Artists"].map((tab) => (
           <button
@@ -142,10 +134,8 @@ const Library: React.FC = () => {
         ))}
       </div>
 
-      {/* Conditionally render content based on active tab */}
       {activeTab === "Playlists" ? (
         <>
-          {/* Favorites / My Songs */}
           {favorites && (
             <div
               className="favorites-card"
@@ -185,7 +175,6 @@ const Library: React.FC = () => {
             </div>
           )}
 
-          {/* Playlist Grid */}
           {playlists.length === 0 ? (
             <div className="text-center empty-state">
               <p>No playlists yet. Create one using the + button.</p>
@@ -224,7 +213,6 @@ const Library: React.FC = () => {
                         </small>
                       </div>
 
-                      {/* 3-dots menu */}
                       <div
                         className="playlist-menu-wrapper"
                         onClick={(e) => e.stopPropagation()}
@@ -246,13 +234,11 @@ const Library: React.FC = () => {
           )}
         </>
       ) : (
-        /* Artists Tab */
         <FavouriteArtists />
       )}
 
       <AddPopup show={showAddPopup} onClose={() => setShowAddPopup(false)} />
 
-      {/* Modal */}
       <ModalMenu
         show={activeModalId !== null}
         onClose={closeModal}

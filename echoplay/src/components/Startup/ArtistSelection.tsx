@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { getToken } from "../../API/SpotifyCred";
+import { getToken, getTrendingArtists } from "../../API/SpotifyCred";
 import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
 import { AiOutlineSearch, AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -17,21 +17,40 @@ interface ArtistSelectionProps {
   onComplete?: () => void;
 }
 
-const INSPIRATION_ARTISTS = [
-  { name: "Drake", id: "3TVXtAsR1Inumwj472S9r4" },
-  { name: "Taylor Swift", id: "06HL4z0CvFAxyc27GXpf02" },
-  { name: "Rihanna", id: "5pKCCKE2ajJHZ9KAiaK11H" },
-  { name: "Bad Bunny", id: "4q3ewBCX7sLwd24euuV69X" },
-  { name: "Ninho", id: "6v49oH3RJl7hBGtO6MhK6U" },
-];
-
 const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
   const { favArtists, addArtist, removeArtist, isFollowing } = useFavouriteArtists();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [trendingArtists, setTrendingArtists] = useState<Artist[]>([]);
+  const [loadingTrending, setLoadingTrending] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Laad trending artiesten bij mount
+  useEffect(() => {
+    const loadTrendingArtists = async () => {
+      try {
+        setLoadingTrending(true);
+        const artists = await getTrendingArtists(20);
+        setTrendingArtists(artists);
+      } catch (error) {
+        console.error("Error loading trending artists:", error);
+        // Fallback naar hardcoded lijst
+        setTrendingArtists([
+          { name: "Drake", id: "3TVXtAsR1Inumwj472S9r4" },
+          { name: "Taylor Swift", id: "06HL4z0CvFAxyc27GXpf02" },
+          { name: "Rihanna", id: "5pKCCKE2ajJHZ9KAiaK11H" },
+          { name: "Bad Bunny", id: "4q3ewBCX7sLwd24euuV69X" },
+          { name: "Ninho", id: "6v49oH3RJl7hBGtO6MhK6U" },
+        ]);
+      } finally {
+        setLoadingTrending(false);
+      }
+    };
+
+    loadTrendingArtists();
+  }, []);
 
   const performSearch = async (query: string) => {
     if (!query.trim()) {
@@ -104,48 +123,15 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
     setShowDropdown(false);
   };
 
-  const handleFollowInspiration = async (artistName: string, artistId: string) => {
-    // Haal artiest data op van Spotify
-    try {
-      setLoading(true);
-      const tokenData = await getToken();
-
-      const response = await fetch(
-        `https://api.spotify.com/v1/artists/${artistId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Bearer " + tokenData.access_token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const artistData = await response.json();
-        const artist: Artist = {
-          id: artistData.id,
-          name: artistData.name,
-          images: artistData.images,
-          genres: artistData.genres,
-          followers: artistData.followers,
-          popularity: artistData.popularity,
-        };
-
-        if (isFollowing(artist.id)) {
-          await removeArtist(artist.id);
-        } else {
-          if (favArtists.length < 3) {
-            await addArtist(artist);
-          } else {
-            alert("Je kunt maximaal 3 artiesten selecteren. Verwijder eerst een artiest.");
-          }
-        }
+  const handleFollowTrending = async (artist: Artist) => {
+    if (isFollowing(artist.id)) {
+      await removeArtist(artist.id);
+    } else {
+      if (favArtists.length < 3) {
+        await addArtist(artist);
+      } else {
+        alert("Je kunt maximaal 3 artiesten selecteren. Verwijder eerst een artiest.");
       }
-    } catch (err) {
-      console.error("Error fetching artist:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -273,26 +259,35 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
         </div>
       )}
 
-      {/* Inspiratie artiesten */}
+      {/* Trending artiesten */}
       <div className="mt-4">
         <h6 className="mb-3 fw-semibold">Populaire artiesten:</h6>
-        <div className="d-flex flex-wrap gap-2">
-          {INSPIRATION_ARTISTS.map((inspArtist) => {
-            const isFollowingInsp = favArtists.some((a) => a.name === inspArtist.name);
-            return (
-              <button
-                key={inspArtist.id}
-                className={`btn ${
-                  isFollowingInsp ? "btn-success" : "btn-outline-primary"
-                } rounded-pill`}
-                onClick={() => handleFollowInspiration(inspArtist.name, inspArtist.id)}
-                disabled={loading || (!isFollowingInsp && favArtists.length >= 3)}
-              >
-                {isFollowingInsp ? "✓ Volgt" : `+ ${inspArtist.name}`}
-              </button>
-            );
-          })}
-        </div>
+        
+        {loadingTrending ? (
+          <div className="text-center py-4">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Trending artiesten laden...</span>
+            </div>
+          </div>
+        ) : (
+          <div className="d-flex flex-wrap gap-2">
+            {trendingArtists.slice(0, 15).map((artist) => {
+              const isFollowingTrend = isFollowing(artist.id);
+              return (
+                <button
+                  key={artist.id}
+                  className={`btn ${
+                    isFollowingTrend ? "btn-success" : "btn-outline-primary"
+                  } rounded-pill`}
+                  onClick={() => handleFollowTrending(artist)}
+                  disabled={loading || (!isFollowingTrend && favArtists.length >= 3)}
+                >
+                  {isFollowingTrend ? "✓ Volgt" : `+ ${artist.name}`}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Progress indicator */}
@@ -319,4 +314,3 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
 };
 
 export default ArtistSelection;
-

@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { createPlaylist } from "../../services/playlistService";
+import { auth } from "../../firebase/firebaseConfig";
+import ErrorMessage from "../ErrorMessage";
 
 const CreatePlaylistForm: React.FC = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
@@ -26,22 +28,25 @@ const CreatePlaylistForm: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      alert("Please enter a playlist name.");
+      setErrorMessage("Please enter a playlist name.");
       return;
     }
+
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
 
     setLoading(true);
     try {
       await createPlaylist({
+        userId,
         name: name.trim(),
         description: description.trim(),
         imageFile,
       });
-      // navigate to library after creation
       navigate("/library");
     } catch (err) {
       console.error("Create playlist error:", err);
-      alert("Could not create playlist. Check console.");
+      setErrorMessage("Could not create playlist. Check console.");
     } finally {
       setLoading(false);
     }
@@ -105,9 +110,9 @@ const CreatePlaylistForm: React.FC = () => {
       >
         {loading ? "Creating..." : "Create Playlist"}
       </button>
+      {errorMessage && <ErrorMessage text={errorMessage} />}
     </div>
   );
 };
 
 export default CreatePlaylistForm;
-

@@ -4,16 +4,18 @@ import ArtistSelection from "../components/Startup/ArtistSelection";
 import { useFavouriteArtists } from "../contexts/FavouriteArtistsContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import ErrorMessage from "../components/ErrorMessage";
 
 const Startupscreen = () => {
   const navigate = useNavigate();
   const { favArtists } = useFavouriteArtists();
+  const [errorMessage,setErrorMessage] = React.useState("");
 
   const handleContinue = () => {
     if (favArtists.length > 0) {
       navigate("/home");
     } else {
-      alert("Selecteer minimaal 1 artiest om door te gaan.");
+      setErrorMessage("Selecteer minimaal 1 artiest om door te gaan.");
     }
   };
 
@@ -61,6 +63,7 @@ const Startupscreen = () => {
           >
             Doorgaan
           </button>
+          <ErrorMessage text={errorMessage} />
         </div>
       </div>
     </div>
