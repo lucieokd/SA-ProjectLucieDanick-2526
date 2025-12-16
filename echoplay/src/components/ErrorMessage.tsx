@@ -4,7 +4,7 @@ interface ErrorMessageProps {
   text?: string;
 }
 
-const ErrorMessage: React.FC<ErrorMessageProps> = ({ text }) => {
+const ErrorMessage = ({ text }) => {
   if (!text) return null;
 
   return (

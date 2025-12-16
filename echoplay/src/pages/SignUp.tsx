@@ -5,6 +5,7 @@ import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
 import { createUser } from "../services/userService";
+import { getOrCreateFavorites, getOrCreateMySongs } from "../services/playlistService";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -15,10 +16,6 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-
-  // huidige jaartal
-  const currentYear = new Date().getFullYear();
-  const minYear = currentYear - 90; // maximaal 90 jaar geleden
 
   const onSignUpClick = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,6 +44,9 @@ const Signup: React.FC = () => {
         lastName: lastName,
         favArtists: []  // ⬅️ Lege array voor favoriteArtist
       });
+
+      await getOrCreateFavorites(user.uid);
+      await getOrCreateMySongs(user.uid);
       
       console.log("Signup successful");
       navigate("/startup");
@@ -79,7 +79,7 @@ const Signup: React.FC = () => {
       >
         <div className="text-center mb-4">
           <img
-            src="/logo.png"
+            src="../logo.png"
             alt="EchoPlay Logo"
             className="img-fluid mb-2"
             style={{ width: "70px" }}

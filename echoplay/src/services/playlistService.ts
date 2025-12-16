@@ -16,28 +16,23 @@ import {
   getDocs,
   deleteDoc,
   getDoc,
+  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export type Playlist = {
   id: string;
+  userId: string;        
   name: string;
   description?: string;
   imageUrl?: string | null;
   createdAt: Timestamp;
-  tracks?: any[];
+  tracks: any[];
 };
 
-/* ---------------------------------------
-   🔥 Playlist CRUD + Track Management
----------------------------------------- */
-
-/** 🎵 Playlist maken */
-export async function createPlaylist({
-  name,
-  description,
-  imageFile,
+export async function createPlaylist({userId,name,description,imageFile,
 }: {
+  userId: string;
   name: string;
   description?: string;
   imageFile?: File | null;
@@ -47,13 +42,14 @@ export async function createPlaylist({
   if (imageFile) {
     const fileRef = ref(
       storage,
-      `playlist_covers/${Date.now()}_${imageFile.name}`
+      `playlist_covers/${userId}/${Date.now()}_${imageFile.name}`
     );
     const snap = await uploadBytes(fileRef, imageFile);
     imageUrl = await getDownloadURL(snap.ref);
   }
 
   const docRef = await addDoc(collection(db, "playlists"), {
+    userId,                      
     name,
     description: description || null,
     imageUrl,
@@ -64,74 +60,65 @@ export async function createPlaylist({
   return docRef.id;
 }
 
-/** 📡 Realtime ophalen */
-export function subscribePlaylists(onUpdate: (items: Playlist[]) => void): Unsubscribe {
-  const q = query(collection(db, "playlists"), orderBy("createdAt", "desc"));
+export function subscribePlaylists(
+  userId: string,
+  onUpdate: (items: Playlist[]) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, "playlists"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc")
+  );
 
   return onSnapshot(q, (snap) => {
-    const items: Playlist[] = snap.docs.map((d) => {
-      const data = d.data() as DocumentData;
-      return {
-        id: d.id,
-        name: data.name,
-        description: data.description ?? "",
-        imageUrl: data.imageUrl ?? null,
-        createdAt: data.createdAt,
-        tracks: data.tracks ?? [],
-      };
-    });
+    const items: Playlist[] = snap.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<Playlist, "id">),
+    }));
 
     onUpdate(items);
   });
 }
 
-/** 🔎 Playlist zoeken op naam */
-export async function findPlaylistByName(name: string) {
-  const snap = await getDocs(collection(db, "playlists"));
-  const all = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Playlist[];
 
-  return all.find(
-    (p) => p.name.toLowerCase().trim() === name.toLowerCase().trim()
-  ) || null;
+export async function findPlaylistByName(
+  userId: string,
+  name: string
+) {
+  const q = query(
+    collection(db, "playlists"),
+    where("userId", "==", userId),
+    where("name", "==", name)
+  );
+
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+
+  const d = snap.docs[0];
+  return { id: d.id, ...(d.data() as any) };
 }
 
-/* ---------------------------------------
-   ⭐ Favorites / My Songs Special Rules
----------------------------------------- */
+export async function getOrCreateFavorites(userId: string) {
+  const existing = await findPlaylistByName(userId, "Favorites");
+  if (existing) return existing.id;
 
-/** 🔄 Haal Favorites op of maak ze aan */
-export async function getOrCreateFavorites() {
-  let p = await findPlaylistByName("Favorites");
-
-  if (p) return p.id;
-
-  const id = await createPlaylist({
+  return await createPlaylist({
+    userId,
     name: "Favorites",
     description: "Your favorited songs",
-    imageFile: null,
   });
-
-  return id;
 }
 
-/** 🎵 Haal My Songs op of maak aan */
-export async function getOrCreateMySongs() {
-  let p = await findPlaylistByName("My Songs");
+export async function getOrCreateMySongs(userId: string) {
+  const existing = await findPlaylistByName(userId, "My Songs");
+  if (existing) return existing.id;
 
-  if (p) return p.id;
-
-  const id = await createPlaylist({
+  return await createPlaylist({
+    userId,
     name: "My Songs",
     description: "Songs uploaded by you",
-    imageFile: null,
   });
-
-  return id;
 }
-
-/* ---------------------------------------
-   ➕ Tracks toevoegen
----------------------------------------- */
 
 export async function addTrackToPlaylist(playlistId: string, track: any) {
   const playlistRef = doc(db, "playlists", playlistId);
@@ -141,7 +128,6 @@ export async function addTrackToPlaylist(playlistId: string, track: any) {
   });
 }
 
-// ➖ Track verwijderen uit playlist
 export async function removeTrackFromPlaylist(playlistId: string, track: any) {
   const playlistRef = doc(db, "playlists", playlistId);
   await updateDoc(playlistRef, {
@@ -149,7 +135,6 @@ export async function removeTrackFromPlaylist(playlistId: string, track: any) {
   });
 }
 
-// ✏️ Playlist hernoemen
 export async function renamePlaylist(playlistId: string, newName: string) {
   const playlistRef = doc(db, "playlists", playlistId);
   await updateDoc(playlistRef, {
@@ -157,7 +142,6 @@ export async function renamePlaylist(playlistId: string, newName: string) {
   });
 }
 
-// 🗑️ Playlist verwijderen
 export async function deletePlaylist(playlistId: string) {
   const playlistRef = doc(db, "playlists", playlistId);
   await deleteDoc(playlistRef);
