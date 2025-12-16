@@ -3,9 +3,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "/assets/logo.png";
 import { getUserByAuthId, createUser } from "../services/userService";
-import { getOrCreateFavorites, getOrCreateMySongs } from "../services/playlistService";
+import {
+  getOrCreateFavorites,
+  getOrCreateMySongs,
+} from "../services/playlistService";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -106,7 +109,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center mb-4">
           <img
-            src="/src/assets/logo.png"
+            src="/assets/logo.png"
             alt="Echoplay Logo"
             className="img-fluid mb-2"
             style={{ width: "80px" }}
