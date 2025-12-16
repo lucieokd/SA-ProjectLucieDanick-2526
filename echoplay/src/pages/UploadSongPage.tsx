@@ -118,7 +118,7 @@ const UploadSongPage: React.FC = () => {
       const audioUrl = await getDownloadURL(audioRef);
 
       // Haal of maak My Songs playlist
-      const mySongsId = await getOrCreateMySongs();
+      const mySongsId = await getOrCreateMySongs(auth.currentUser.uid);
 
       // 🔹 Track object met expliciete naam en cover
 
