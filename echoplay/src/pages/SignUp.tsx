@@ -60,10 +60,18 @@ const Signup: React.FC = () => {
         lastName: lastName,
         favArtists: [], // ⬅️ Lege array voor favoriteArtist
       });
+      const favorietenPlaylist = await getOrCreateFavorites(user.uid);
+      if (!favorietenPlaylist) {
+        console.error("Failed to get or create Favorites playlist");
+        await getOrCreateFavorites(user.uid);
+      }
 
-      await getOrCreateFavorites(user.uid);
-      await getOrCreateMySongs(user.uid);
-      
+      const mySongsPlaylist = await getOrCreateMySongs(user.uid);
+      if (!mySongsPlaylist) {
+        console.error("Failed to get or create My Songs playlist");
+        await getOrCreateMySongs(user.uid);
+      }
+
       console.log("Signup successful");
       navigate("/startup");
     } catch (err: any) {

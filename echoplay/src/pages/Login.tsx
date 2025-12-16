@@ -47,9 +47,7 @@ const Login: React.FC = () => {
           lastName: lastName,
           favArtists: [],
         });
-        
-        await getOrCreateFavorites(user.uid);
-        await getOrCreateMySongs(user.uid);
+
         console.log("User document aangemaakt voor bestaande gebruiker");
       }
 
@@ -64,7 +62,7 @@ const Login: React.FC = () => {
         console.error("Failed to get or create My Songs playlist");
         await getOrCreateMySongs(user.uid);
       }
-      
+
       console.log("Login successful!");
       navigate("/home");
     } catch (err: any) {
