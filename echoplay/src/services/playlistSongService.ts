@@ -1,5 +1,4 @@
 // src/services/playlistSongService.ts
-
 import { db } from "../firebase/firebaseConfig";
 import {
   addDoc,
@@ -23,7 +22,9 @@ export type PlaylistSong = {
   createdAt: Timestamp;
 };
 
-// 1. Zoeken of Favorites playlist al bestaat → anders aanmaken
+/* ---------------------------------------
+   🔹 Favorites playlist check / create
+---------------------------------------- */
 export async function getOrCreateFavoritesPlaylist() {
   const q = query(collection(db, "playlists"), where("name", "==", "Favorites"));
   const snap = await getDocs(q);
@@ -40,21 +41,33 @@ export async function getOrCreateFavoritesPlaylist() {
   return newDoc.id;
 }
 
-// 2. Track toevoegen aan playlist
+/* ---------------------------------------
+   ➕ Track toevoegen aan playlist
+---------------------------------------- */
 export async function addSongToPlaylist(playlistId: string, track: any) {
+  // Zorg dat track.name en track.image correct worden gebruikt
+  const trackName = track.name || "Untitled Song";
+  const trackImage =
+    track.image || track.album?.images?.[0]?.url || null;
+
   await addDoc(collection(db, "playlistSongs"), {
     playlistId,
     trackId: track.id,
-    name: track.name,
-    artist: track.artists.map((a: any) => a.name).join(", "),
+    name: trackName, // gebruik gekozen songName
+    artist: track.artists?.map((a: any) => a.name).join(", ") || "Unknown Artist",
     preview_url: track.preview_url || null,
-    image: track.album.images?.[0]?.url || null,
+    image: trackImage,
     createdAt: Timestamp.now(),
   });
 }
 
-// 3. Realtime subscribe op songs binnen één playlist
-export function subscribeSongs(playlistId: string, onUpdate: (songs: PlaylistSong[]) => void) {
+/* ---------------------------------------
+   📡 Realtime subscribe op songs binnen één playlist
+---------------------------------------- */
+export function subscribeSongs(
+  playlistId: string,
+  onUpdate: (songs: PlaylistSong[]) => void
+) {
   const q = query(
     collection(db, "playlistSongs"),
     where("playlistId", "==", playlistId)

@@ -1,7 +1,7 @@
-import React, { useState, FormEvent, ChangeEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
 import { createUser } from "../services/userService";
@@ -17,6 +17,19 @@ const Signup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 90;
+
+  const onGoogleSignup = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      navigate("/home");
+    } catch (err: any) {
+      console.error(err);
+      setError("Google authentication failed. Please try again.");
+    }
+  };
+
   const onSignUpClick = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -25,7 +38,6 @@ const Signup: React.FC = () => {
       return;
     }
 
-
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -33,16 +45,20 @@ const Signup: React.FC = () => {
 
     try {
       // Maak eerst de auth gebruiker aan
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      
+
       // Maak nu het user document aan in Firestore
       await createUser({
-        authId: user.uid,  // ⬅️ Voeg authId toe
+        authId: user.uid, // ⬅️ Voeg authId toe
         email: email,
         firstName: firstName,
         lastName: lastName,
-        favArtists: []  // ⬅️ Lege array voor favoriteArtist
+        favArtists: [], // ⬅️ Lege array voor favoriteArtist
       });
 
       await getOrCreateFavorites(user.uid);
@@ -51,7 +67,7 @@ const Signup: React.FC = () => {
       console.log("Signup successful");
       navigate("/startup");
     } catch (err: any) {
-      console.error("Signup failed:", err);
+      console.error(err);
       switch (err.code) {
         case "auth/email-already-in-use":
           setError("This email is already registered.");
@@ -78,12 +94,7 @@ const Signup: React.FC = () => {
         }}
       >
         <div className="text-center mb-4">
-          <img
-            src="../logo.png"
-            alt="EchoPlay Logo"
-            className="img-fluid mb-2"
-            style={{ width: "70px" }}
-          />
+          <img src="/logo.png" alt="EchoPlay Logo" style={{ width: "70px" }} />
           <h5 className="fw-bold">Create your echoplay account</h5>
         </div>
 
@@ -150,12 +161,21 @@ const Signup: React.FC = () => {
           </button>
         </form>
 
+        {/* ✔️ GOOGLE BUTTON */}
+        <button
+          type="button"
+          onClick={onGoogleSignup}
+          className="btn btn-light border w-100 rounded-pill mb-3 d-flex align-items-center justify-content-center"
+          style={{ gap: "10px" }}
+        >
+          <img src="/google-icon.webp" alt="Google" style={{ width: "20px" }} />
+          Continue with Google
+        </button>
+
         <p className="text-center text-muted mb-0">
           Already have an account?{" "}
           <button
-            type="button"
             className="btn btn-link fw-semibold p-0"
-            style={{ color: "#6c2bd9" }}
             onClick={() => navigate("/")}
           >
             Login

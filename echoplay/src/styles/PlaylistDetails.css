@@ -35,6 +35,50 @@
   font-size: 24px;
   font-weight: 800;
 }
+.playlist-actions {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0 20px 0;
+}
+
+.playlist-actions .btn {
+  background: var(--accent-color);
+  border: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 26px;
+}
+
+.playlist-actions {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0 20px 0;
+}
+
+/* Zwarte ronde knoppen */
+.playlist-actions .btn {
+  background: #000 ;
+  border: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 26px;
+  color: white !important;
+  transition: background 0.25s ease;
+}
+
+/* Hover = jouw paarse thema */
+.playlist-actions .btn:hover {
+  background: #a855f7 ;
+}
+
 
 .track-list {
   margin-top: 16px;
@@ -122,4 +166,26 @@
 
 .track-popup .danger {
   color: #d32f2f;
+}
+
+.shuffle-active {
+  background-color: #7b2cbf !important;
+  border-color: #7b2cbf !important;
+}
+
+.shuffle-active i {
+  color: white;
+}
+
+.playlist-actions .btn.shuffle-active {
+  background: #7b2cbf;
+}
+
+.playlist-actions .btn.shuffle-active:hover {
+  background: #7b2cbf;
+}
+
+.active-track {
+  background-color: rgba(123, 44, 191, 0.2);
+  border-left: 4px solid #7b2cbf;
 }
