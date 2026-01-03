@@ -47,7 +47,7 @@ const UploadSongPage: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (!file.type.startsWith("image/")) {
-        setError("Please upload a valid image file for the cover.");
+        setError("Upload een geldige afbeelding voor de cover.");
         return;
       }
       setCoverFile(file);
@@ -61,7 +61,7 @@ const UploadSongPage: React.FC = () => {
       const file = e.target.files[0];
 
       if (!file.type.startsWith("audio/")) {
-        setError("Please upload a valid audio file.");
+        setError("Upload een geldig audiobestand.");
         return;
       }
 
@@ -72,7 +72,7 @@ const UploadSongPage: React.FC = () => {
 
   const handleUpload = async () => {
     if (!auth.currentUser) {
-      setError("You must be logged in to upload a song.");
+      setError("Je moet ingelogd zijn om een nummer te uploaden.");
       return;
     }
 
@@ -81,19 +81,19 @@ const UploadSongPage: React.FC = () => {
     setLoading(true);
 
     if (!songName.trim()) {
-      setError("Please enter a song name.");
+      setError("Voer een nummernaam in.");
       setLoading(false);
       return;
     }
 
     if (!coverFile) {
-      setError("Please select a cover image.");
+      setError("Selecteer een coverafbeelding.");
       setLoading(false);
       return;
     }
 
     if (!audioFile) {
-      setError("Please select an audio file.");
+      setError("Selecteer een audiobestand.");
       setLoading(false);
       return;
     }
@@ -136,7 +136,7 @@ const UploadSongPage: React.FC = () => {
 
       await addTrackToPlaylist(mySongsId, track);
 
-      setSuccess("Song uploaded successfully");
+      setSuccess("Nummer succesvol geüpload");
       setTimeout(() => navigate(`/playlist/${mySongsId}`), 2000);
 
       setSongName("");
@@ -146,7 +146,7 @@ const UploadSongPage: React.FC = () => {
       setCoverPreviewUrl(null);
     } catch (err) {
       console.error(err);
-      setError("Upload failed. Please try again.");
+      setError("Upload mislukt. Probeer het opnieuw.");
     } finally {
       setLoading(false);
     }
@@ -162,7 +162,7 @@ const UploadSongPage: React.FC = () => {
         color: "#000",
       }}
     >
-      <h2 style={{ fontWeight: 700, marginBottom: "20px" }}>Upload Music</h2>
+      <h2 style={{ fontWeight: 700, marginBottom: "20px" }}>Muziek uploaden</h2>
 
       {/* Card */}
       <div
@@ -178,7 +178,7 @@ const UploadSongPage: React.FC = () => {
           <label
             style={{ fontWeight: 600, marginBottom: "8px", display: "block" }}
           >
-            Cover Image
+            Coverafbeelding
           </label>
 
           {/* Pretty upload button */}
@@ -194,7 +194,7 @@ const UploadSongPage: React.FC = () => {
               border: "1px solid #d1d1d1",
             }}
           >
-            Choose cover
+            Kies coverafbeelding
             <input
               type="file"
               accept="image/*"
@@ -227,13 +227,13 @@ const UploadSongPage: React.FC = () => {
           <label
             style={{ display: "block", fontWeight: 600, marginBottom: "8px" }}
           >
-            Song Name
+            Nummernaam
           </label>
           <input
             type="text"
             value={songName}
             onChange={(e) => setSongName(e.target.value)}
-            placeholder="Enter song name"
+            placeholder="Voer nummernaam in"
             style={{
               width: "100%",
               padding: "10px",
@@ -250,7 +250,7 @@ const UploadSongPage: React.FC = () => {
           <label
             style={{ fontWeight: 600, marginBottom: "8px", display: "block" }}
           >
-            Audio File
+            Audiobestand
           </label>
 
           <label
@@ -265,7 +265,7 @@ const UploadSongPage: React.FC = () => {
               border: "1px solid #d1d1d1",
             }}
           >
-            Choose audio
+            Kies audiobestand
             <input
               type="file"
               accept="audio/*"
@@ -304,10 +304,10 @@ const UploadSongPage: React.FC = () => {
 
             <div style={{ padding: "14px" }}>
               <strong style={{ fontSize: "16px" }}>
-                {songName || "Untitled song"}
+                {songName || "Naamloos nummer"}
               </strong>
               <p style={{ fontSize: "13px", opacity: 0.6, margin: 0 }}>
-                You · Uploaded
+                Jij · Geüpload
               </p>
 
               {audioPreviewUrl && (
@@ -369,7 +369,7 @@ const UploadSongPage: React.FC = () => {
             boxShadow: "0 6px 18px rgba(108,43,217,0.25)",
           }}
         >
-          {loading ? "Uploading..." : "Upload Song"}
+          {loading ? "Uploaden..." : "Nummer uploaden"}
         </button>
       </div>
     </div>

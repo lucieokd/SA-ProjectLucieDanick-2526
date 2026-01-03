@@ -27,7 +27,7 @@ const Signup: React.FC = () => {
       navigate("/home");
     } catch (err: any) {
       console.error(err);
-      setError("Google authentication failed. Please try again.");
+      setError("Google-authenticatie mislukt. Probeer het opnieuw.");
     }
   };
 
@@ -35,12 +35,12 @@ const Signup: React.FC = () => {
     e.preventDefault();
 
     if (!email || !password || !confirmPassword || !firstName || !lastName) {
-      setError("Please fill in all required fields.");
+      setError("Vul alle verplichte velden in.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Wachtwoorden komen niet overeen.");
       return;
     }
 
@@ -79,16 +79,16 @@ const Signup: React.FC = () => {
       console.error(err);
       switch (err.code) {
         case "auth/email-already-in-use":
-          setError("This email is already registered.");
+          setError("Dit e-mailadres is al geregistreerd.");
           break;
         case "auth/invalid-email":
-          setError("Invalid email format.");
+          setError("Ongeldig e-mailformaat.");
           break;
         case "auth/weak-password":
-          setError("Password should be at least 6 characters.");
+          setError("Wachtwoord moet minimaal 6 tekens lang zijn.");
           break;
         default:
-          setError("Something went wrong. Please try again.");
+          setError("Er is iets misgegaan. Probeer het opnieuw.");
       }
     }
   };
@@ -104,7 +104,7 @@ const Signup: React.FC = () => {
       >
         <div className="text-center mb-4">
           <img src={logo} alt="EchoPlay Logo" style={{ width: "70px" }} />
-          <h5 className="fw-bold">Create your echoplay account</h5>
+          <h5 className="fw-bold">Maak je echoplay account aan</h5>
         </div>
 
         <form onSubmit={onSignUpClick}>
@@ -122,14 +122,14 @@ const Signup: React.FC = () => {
             <input
               type="text"
               className="form-control form-control-lg rounded-pill text-center"
-              placeholder="First Name"
+              placeholder="Voornaam"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
             />
             <input
               type="text"
               className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Last Name"
+              placeholder="Achternaam"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -139,7 +139,7 @@ const Signup: React.FC = () => {
             <input
               type="password"
               className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Password"
+              placeholder="Wachtwoord"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -149,7 +149,7 @@ const Signup: React.FC = () => {
             <input
               type="password"
               className="form-control form-control-lg rounded-pill text-center"
-              placeholder="Confirm Password"
+              placeholder="Bevestig wachtwoord"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -166,7 +166,7 @@ const Signup: React.FC = () => {
               color: "white",
             }}
           >
-            Sign Up
+            Registreren
           </button>
         </form>
 
@@ -178,16 +178,16 @@ const Signup: React.FC = () => {
           style={{ gap: "10px" }}
         >
           <img src="/google-icon.webp" alt="Google" style={{ width: "20px" }} />
-          Continue with Google
+          Doorgaan met Google
         </button>
 
         <p className="text-center text-muted mb-0">
-          Already have an account?{" "}
+          Al een account?{" "}
           <button
             className="btn btn-link fw-semibold p-0"
             onClick={() => navigate("/")}
           >
-            Login
+            Inloggen
           </button>
         </p>
       </div>

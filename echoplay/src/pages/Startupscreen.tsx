@@ -5,7 +5,7 @@ import { useFavouriteArtists } from "../contexts/FavouriteArtistsContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import ErrorMessage from "../components/ErrorMessage";
-
+import logo from "/assets/logo.png";
 const Startupscreen = () => {
   const navigate = useNavigate();
   const { favArtists } = useFavouriteArtists();
@@ -34,7 +34,7 @@ const Startupscreen = () => {
       >
         <div className="text-center mb-4">
           <img
-            src="/logo.png"
+            src={logo}
             alt="EchoPlay Logo"
             className="img-fluid mb-3"
             style={{ width: "80px" }}

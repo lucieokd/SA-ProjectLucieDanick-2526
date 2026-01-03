@@ -17,10 +17,10 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
   const location = useLocation();
 
   const items = [
-    { to: "/home", label: "Home", icon: <AiFillHome /> },
-    { to: "/search", label: "Search", icon: <AiOutlineSearch /> },
-    { to: "", label: "Add", icon: <AiOutlinePlusCircle />, isAdd: true },
-    { to: "/library", label: "Library", icon: <IoMusicalNotesSharp /> },
+    { to: "/home", label: "Start", icon: <AiFillHome /> },
+    { to: "/search", label: "Zoeken", icon: <AiOutlineSearch /> },
+    { to: "", label: "Toevoegen", icon: <AiOutlinePlusCircle />, isAdd: true },
+    { to: "/library", label: "Bibliotheek", icon: <IoMusicalNotesSharp /> },
   ];
 
   return (

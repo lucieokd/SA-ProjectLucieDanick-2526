@@ -179,9 +179,10 @@ useEffect(() => {
 
   return (
     <div className="playlist-details-container">
-      {/* Back button */}
-      <button className="btn" onClick={() => navigate(-1)}>
-        &lt;
+      <button             
+        className="btn btn-outline-secondary"
+        onClick={() => navigate(-1)}>
+        <i className="bi bi-arrow-left"></i> Terug
       </button>
 
       {/* Playlist header */}
