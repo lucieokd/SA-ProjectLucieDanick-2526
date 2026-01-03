@@ -28,7 +28,7 @@ const CreatePlaylistForm: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      setErrorMessage("Please enter a playlist name.");
+      setErrorMessage("Voer een playlistnaam in.");
       return;
     }
 
@@ -46,7 +46,7 @@ const CreatePlaylistForm: React.FC = () => {
       navigate("/library");
     } catch (err) {
       console.error("Create playlist error:", err);
-      setErrorMessage("Could not create playlist. Check console.");
+      setErrorMessage("Kon playlist niet aanmaken. Controleer de console.");
     } finally {
       setLoading(false);
     }
@@ -54,25 +54,25 @@ const CreatePlaylistForm: React.FC = () => {
 
   return (
     <div className="container py-4">
-      <h3 className="fw-semibold mb-4">Create Playlist</h3>
+      <h3 className="fw-semibold mb-4">Playlist aanmaken</h3>
 
       <div className="mb-3">
-        <label className="form-label fw-semibold">Playlist Name</label>
+        <label className="form-label fw-semibold">Playlistnaam</label>
         <input
           type="text"
           className="form-control"
-          placeholder="My Playlist"
+          placeholder="Mijn playlist"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
 
       <div className="mb-3">
-        <label className="form-label fw-semibold">Description</label>
+        <label className="form-label fw-semibold">Beschrijving</label>
         <textarea
           className="form-control"
           rows={3}
-          placeholder="Describe your playlist..."
+          placeholder="Beschrijf je playlist..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           style={{ resize: "none" }}
@@ -80,7 +80,7 @@ const CreatePlaylistForm: React.FC = () => {
       </div>
 
       <div className="mb-3">
-        <label className="form-label fw-semibold">Cover Image</label>
+        <label className="form-label fw-semibold">Coverafbeelding</label>
         <input
           type="file"
           accept="image/*"
@@ -108,7 +108,7 @@ const CreatePlaylistForm: React.FC = () => {
         onClick={handleSubmit}
         disabled={loading}
       >
-        {loading ? "Creating..." : "Create Playlist"}
+        {loading ? "Aanmaken..." : "Playlist aanmaken"}
       </button>
       {errorMessage && <ErrorMessage text={errorMessage} />}
     </div>

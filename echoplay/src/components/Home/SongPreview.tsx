@@ -38,12 +38,36 @@ const SongPreview: React.FC = () => {
   const userId = auth.currentUser?.uid;
 
   // Fetch playlists
-  useEffect(() => {
-    const unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
-    setPlaylists(fetchedPlaylists);
-  });
-  return () => unsubscribe();
-  }, []);
+ useEffect(() => {
+    // Guard: alleen subscriben als userId bestaat
+    if (!userId) {
+      setPlaylists([]);
+      return;
+    }
+
+    let unsubscribe: (() => void) | undefined;
+
+    try {
+      unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
+        setPlaylists(fetchedPlaylists);
+      });
+    } catch (err) {
+      console.error("Error subscribing to playlists:", err);
+      setPlaylists([]);
+    }
+
+    // Cleanup functie
+    return () => {
+      if (unsubscribe) {
+        try {
+          unsubscribe();
+        } catch (err) {
+          console.error("Error unsubscribing from playlists:", err);
+        }
+      }
+    };
+  }, [userId]); // ✅ userId in dependencies
+
 
   // Load initial metadata
   useEffect(() => {
@@ -73,7 +97,6 @@ const SongPreview: React.FC = () => {
           [unique[i], unique[j]] = [unique[j], unique[i]];
         }
 
-        // Take only first 150 tracks
         const limitedTracks = unique.slice(0, 150);
         setTracks(limitedTracks);
         setCurrentIndex(0);
@@ -107,20 +130,15 @@ const SongPreview: React.FC = () => {
     }
   };
 
-  // Load previews for current and next track
   useEffect(() => {
     if (!tracks.length) return;
 
-    // Load preview for current track
     ensurePreviewLoaded(currentIndex);
-    
-    // Preload next track preview
     if (currentIndex + 1 < tracks.length) {
       ensurePreviewLoaded(currentIndex + 1);
     }
   }, [currentIndex, tracks]);
 
-  // Handle audio playback when track changes
   useEffect(() => {
     if (!audioRef.current || !currentTrack) return;
 
@@ -172,7 +190,6 @@ const SongPreview: React.FC = () => {
     }
   };
 
-  // Navigation
   const next = () => {
     if (currentIndex < tracks.length - 1) {
       setCurrentIndex(i => i + 1);
@@ -185,7 +202,6 @@ const SongPreview: React.FC = () => {
     }
   };
 
-  // Add CSS for animation
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
@@ -282,11 +298,11 @@ const SongPreview: React.FC = () => {
               >
                 {isPlaying ? (
                   <>
-                    <i className="bi bi-pause-fill me-2"></i> Pause
+                    <i className="bi bi-pause-fill me-2"></i> Pauzeren
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-play-fill me-2"></i> Play
+                    <i className="bi bi-play-fill me-2"></i> Afspelen
                   </>
                 )}
               </button>

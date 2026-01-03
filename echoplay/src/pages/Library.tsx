@@ -109,12 +109,12 @@ const Library: React.FC = () => {
   return (
     <div className="library-container">
       <div className="library-header">
-        <h1 className="library-title">Library</h1>
+        <h1 className="library-title">Bibliotheek</h1>
         <div className="header-actions">
           <button
             className="btn add-main-btn"
             onClick={() => setShowAddPopup(true)}
-            aria-label="Add"
+            aria-label="Toevoegen"
             type="button"
           >
             <i className="bi bi-plus-lg"></i>
@@ -123,7 +123,7 @@ const Library: React.FC = () => {
       </div>
 
       <div className="library-tabs">
-        {["Playlists", "Artists"].map((tab) => (
+        {["Playlists", "Artiesten"].map((tab) => (
           <button
             key={tab}
             className={`tab-button ${activeTab === tab ? "active" : ""}`}
@@ -145,7 +145,7 @@ const Library: React.FC = () => {
             >
               <div className="favorites-artwork" />
               <div className="favorites-info">
-                <div className="favorites-title">Favorites</div>
+                <div className="favorites-title">Favorieten</div>
                 <div className="favorites-sub">
                   {favorites.tracks?.length ?? 0} nummers
                 </div>
@@ -164,7 +164,7 @@ const Library: React.FC = () => {
             >
               <div className="favorites-artwork my-songs-artwork" />
               <div className="favorites-info">
-                <div className="favorites-title">My Songs</div>
+                <div className="favorites-title">Mijn nummers</div>
                 <div className="favorites-sub">
                   {mySongs.tracks?.length ?? 0} nummers
                 </div>
@@ -177,7 +177,7 @@ const Library: React.FC = () => {
 
           {playlists.length === 0 ? (
             <div className="text-center empty-state">
-              <p>No playlists yet. Create one using the + button.</p>
+              <p>Nog geen playlists. Maak er een aan met de + knop.</p>
             </div>
           ) : (
             <div className="playlist-grid">

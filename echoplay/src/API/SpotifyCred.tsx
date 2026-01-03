@@ -65,12 +65,11 @@ export async function getArtistInfo(access_token: string, artistName: string) {
 
 
 /**
- * Haalt de Top 50 Global playlist op van Spotify
  * Playlist ID: 37i9dQZEVXbMDoHDwVN2tF (Top 50 Global)
  */
 export async function getTop50GlobalTracks(access_token: string) {
   const TOP_50_GLOBAL_ID = '37i9dQZF1DXcBWIGoYBM5M';
-  const MY_PLAYLIST_ID = '54xdmqNhh3rcFDgOAcMOQ9'; // <-- Hier je ID invullen
+  const MY_PLAYLIST_ID = '54xdmqNhh3rcFDgOAcMOQ9'; 
 
   
   const response = await fetch(
@@ -89,10 +88,6 @@ export async function getTop50GlobalTracks(access_token: string) {
   return data.items.map((item: any) => item.track);
 }
 
-/**
- * Extraheert unieke artiesten uit een lijst van tracks
- * Returnt een array van artiesten met hun ID, naam en afbeelding
- */
 export async function getUniqueArtistsFromTracks(tracks: any[]) {
   const artistMap = new Map();
 
@@ -112,12 +107,7 @@ export async function getUniqueArtistsFromTracks(tracks: any[]) {
   return Array.from(artistMap.values());
 }
 
-/**
- * Haalt volledige artiest informatie op (inclusief afbeeldingen)
- * voor een lijst van artiest IDs
- */
 export async function getArtistsDetails(access_token: string, artistIds: string[]) {
-  // Spotify API accepteert max 50 IDs per request
   const chunks = [];
   for (let i = 0; i < artistIds.length; i += 50) {
     chunks.push(artistIds.slice(i, i + 50));
@@ -145,10 +135,6 @@ export async function getArtistsDetails(access_token: string, artistIds: string[
   return allArtists;
 }
 
-/**
- * Hoofdfunctie: Haalt trending artiesten op basis van Top 50 Global
- * Returnt een array van artiesten met alle details (naam, ID, afbeelding)
- */
 export async function getTrendingArtists(limit: number = 20) {
   try {
     // 1. Haal access token op
@@ -179,7 +165,7 @@ export async function getTrendingArtists(limit: number = 20) {
     }));
   } catch (error) {
     console.error('Error fetching trending artists:', error);
-    // Fallback naar hardcoded lijst bij fout
+    // Fallback
     return [
       { name: "Drake", id: "3TVXtAsR1Inumwj472S9r4" },
       { name: "Taylor Swift", id: "06HL4z0CvFAxyc27GXpf02" },

@@ -46,7 +46,7 @@ const AddPopup: React.FC<AddPopupProps> = ({ show, onClose }) => {
         onClick={(e) => e.stopPropagation()} // voorkomt dat klik buiten popup sluit
       >
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5 className="mb-0 fw-semibold">What would you like to add?</h5>
+          <h5 className="mb-0 fw-semibold">Wat wil je toevoegen?</h5>
           <button className="btn-close" onClick={onClose}></button>
         </div>
 
@@ -55,13 +55,13 @@ const AddPopup: React.FC<AddPopupProps> = ({ show, onClose }) => {
             className="custom-btn d-flex align-items-center gap-2 py-2"
             onClick={handleAddSong}
           >
-            <i className="bi bi-music-note"></i> Add Song
+            <i className="bi bi-music-note"></i> Nummer toevoegen
           </button>
           <button
             className="custom-btn d-flex align-items-center gap-2 py-2"
             onClick={handleCreatePlaylist}
           >
-            <i className="bi bi-list-ul"></i> Create Playlist
+            <i className="bi bi-list-ul"></i> Playlist aanmaken
           </button>
         </div>
       </div>

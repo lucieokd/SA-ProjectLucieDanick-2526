@@ -57,7 +57,7 @@ const UserInfo: React.FC<UserInfoProps> = ({
           } else {
             console.warn("No user data found in Firestore for UID:", user.uid);
             setError(
-              "User profile not found. Please update your profile information."
+              "Gebruikersprofiel niet gevonden. Werk je profielinformatie bij."
             );
             // Set email from auth as fallback
             setFormData((prev) => ({
@@ -68,7 +68,7 @@ const UserInfo: React.FC<UserInfoProps> = ({
         } catch (error) {
           console.error("Error fetching user data:", error);
           setError(
-            "Failed to load user profile. Please try refreshing the page."
+            "Kon gebruikersprofiel niet laden. Probeer de pagina te vernieuwen."
           );
         } finally {
           setLoading(false);
@@ -186,7 +186,7 @@ const UserInfo: React.FC<UserInfoProps> = ({
         style={{ minHeight: "200px" }}
       >
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+          <span className="visually-hidden">Laden...</span>
         </div>
       </div>
     );
@@ -196,7 +196,7 @@ const UserInfo: React.FC<UserInfoProps> = ({
     return (
       <div>
         <div className="mb-4">
-          <label className="form-label fw-semibold">Theme preferences</label>
+          <label className="form-label fw-semibold">Thema voorkeuren</label>
           <div className="d-flex align-items-center">
             <button
               type="button"
@@ -210,7 +210,7 @@ const UserInfo: React.FC<UserInfoProps> = ({
           </div>
         </div>
         <button type="button" className="btn btn-danger" onClick={handleLogout}>
-          Logout
+          Uitloggen
         </button>
       </div>
     );

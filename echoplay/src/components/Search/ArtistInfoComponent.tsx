@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getToken, getArtistInfo } from "../../API/SpotifyCred";
 import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
+import { useNavigate } from "react-router-dom";
 
 
 interface Artist {
@@ -24,6 +25,7 @@ const ArtistInfoComponent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { favArtists, addArtist, removeArtist, isFollowing } = useFavouriteArtists();
+  const navigate = useNavigate();
 
    const handleAddArtist = (artist: Artist) => {
           const isAlreadyAdded = isFollowing(artist.id);
@@ -115,6 +117,11 @@ const ArtistInfoComponent = () => {
     <div className="container mt-4">
       <div className="row align-items-start">
         <div className="col-md-4 col-sm-12 mb-4 mb-md-0">
+                <button             
+        className="btn btn-outline-secondary"
+        onClick={() => navigate(-1)}>
+        <i className="bi bi-arrow-left"></i> Terug
+      </button>
           <div className="text-center">
             {artist.images && artist.images.length > 0 && (
               <img

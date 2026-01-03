@@ -19,11 +19,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onAddClick }) => {
   const location = useLocation();
 
   const menuItems = [
-    { path: "/home", label: "Home", icon: <AiOutlineHome /> },
-    { path: "/search", label: "Search", icon: <AiOutlineSearch /> },
+    { path: "/home", label: "Start", icon: <AiOutlineHome /> },
+    { path: "/search", label: "Zoeken", icon: <AiOutlineSearch /> },
     { path: "/library", label: "Playlists", icon: <BsMusicNoteList /> },
-    { path: "/profile", label: "Profile & Settings", icon: <AiOutlineSetting /> },
-    { path: "/about", label: "About", icon: <AiOutlineInfoCircle /> },
+    { path: "/profile", label: "Profiel & Instellingen", icon: <AiOutlineSetting /> },
+    { path: "/about", label: "Over", icon: <AiOutlineInfoCircle /> },
   ];
 
   const isActive = (path: string) => {
@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onAddClick }) => {
           <span className="sidebar-icon">
             <AiOutlinePlusCircle />
           </span>
-          <span className="sidebar-label">Add</span>
+          <span className="sidebar-label">Toevoegen</span>
         </div>
       )}
     </nav>

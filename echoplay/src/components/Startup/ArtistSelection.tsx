@@ -168,7 +168,6 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
           )}
         </div>
 
-        {/* Dropdown met zoekresultaten */}
         {showDropdown && searchResults.length > 0 && (
           <div
             className="position-absolute w-100 bg-white border rounded-bottom shadow-lg"
@@ -235,7 +234,6 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
         )}
       </div>
 
-      {/* Geselecteerde artiesten */}
       {favArtists.length > 0 && (
         <div className="mb-4">
           <h6 className="mb-3 fw-semibold">Jouw top {favArtists.length} artiesten:</h6>
@@ -259,7 +257,6 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
         </div>
       )}
 
-      {/* Trending artiesten */}
       <div className="mt-4">
         <h6 className="mb-3 fw-semibold">Populaire artiesten:</h6>
         
@@ -290,7 +287,6 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
         )}
       </div>
 
-      {/* Progress indicator */}
       <div className="mt-4">
         <div className="progress" style={{ height: "8px" }}>
           <div
