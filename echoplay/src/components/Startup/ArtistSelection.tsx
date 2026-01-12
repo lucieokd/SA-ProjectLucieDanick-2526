@@ -310,3 +310,4 @@ const ArtistSelection: React.FC<ArtistSelectionProps> = ({ onComplete }) => {
 };
 
 export default ArtistSelection;
+
