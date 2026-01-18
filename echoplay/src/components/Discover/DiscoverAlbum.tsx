@@ -47,11 +47,31 @@ const DiscoverAlbum = () => {
     }, [playlistName, artistName]);
 
     useEffect(() => {
-        if (!userId) return;
-        const unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
-            setPlaylists(fetchedPlaylists);
-        });
-        return () => unsubscribe();
+        if (!userId) {
+            setPlaylists([]);
+            return;
+        }
+
+        let unsubscribe: (() => void) | undefined;
+
+        try {
+            unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
+                setPlaylists(fetchedPlaylists);
+            });
+        } catch (err) {
+            console.error("Error subscribing to playlists:", err);
+            setPlaylists([]);
+        }
+
+        return () => {
+            if (unsubscribe) {
+                try {
+                    unsubscribe();
+                } catch (err) {
+                    console.error("Error unsubscribing from playlists:", err);
+                }
+            }
+        };
     }, [userId]);
 
     const handleBack = () => {
@@ -70,16 +90,14 @@ const DiscoverAlbum = () => {
             // Haal preview URL op voor de track
             const previewUrl = await getPreviewUrlFromITunes(selectedTrack.name, artistName);
             
-            // Maak track object aan
+            // Maak track object aan volgens de verwachte structuur
             const trackData = {
                 id: `${selectedTrack.name}-${artistName}-${Date.now()}`,
                 name: selectedTrack.name,
-                preview_url: previewUrl || null,
-                album: {
-                    name: playlistName,
-                    images: []
-                },
-                artists: [{ name: artistName, id: artistName }]
+                artist: artistName, // string, niet array
+                album: playlistName, // string, niet object
+                artwork: null, // artwork ontbreekt voor nu
+                preview_url: previewUrl || null
             };
 
             await addTrackToPlaylist(playlistId, trackData);
