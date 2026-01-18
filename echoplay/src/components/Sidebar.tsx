@@ -6,9 +6,11 @@ import {
   AiOutlineSetting,
   AiOutlinePlusCircle,
   AiOutlineInfoCircle,
+  AiOutlineCompass
 } from "react-icons/ai";
 import { BsMusicNoteList } from "react-icons/bs";
 import "./Sidebar.css";
+import path from "path";
 
 interface SidebarProps {
   onAddClick?: () => void;
@@ -21,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onAddClick }) => {
   const menuItems = [
     { path: "/home", label: "Start", icon: <AiOutlineHome /> },
     { path: "/search", label: "Zoeken", icon: <AiOutlineSearch /> },
+    {path: "/discover", label: "Ontdekken", icon: <AiOutlineCompass /> },
     { path: "/library", label: "Playlists", icon: <BsMusicNoteList /> },
     { path: "/profile", label: "Profiel & Instellingen", icon: <AiOutlineSetting /> },
     { path: "/about", label: "Over", icon: <AiOutlineInfoCircle /> },

@@ -6,6 +6,7 @@ import {
   AiFillHome,
   AiOutlineSearch,
   AiOutlinePlusCircle,
+  AiOutlineCompass
 } from "react-icons/ai";
 import { IoMusicalNotesSharp } from "react-icons/io5";
 
@@ -19,6 +20,7 @@ const Navbar: React.FC<NavbarProps> = ({ onAddClick }) => {
   const items = [
     { to: "/home", label: "Start", icon: <AiFillHome /> },
     { to: "/search", label: "Zoeken", icon: <AiOutlineSearch /> },
+    { to: "/discover", label: "Ontdekken", icon: <AiOutlineCompass /> },
     { to: "", label: "Toevoegen", icon: <AiOutlinePlusCircle />, isAdd: true },
     { to: "/library", label: "Bibliotheek", icon: <IoMusicalNotesSharp /> },
   ];

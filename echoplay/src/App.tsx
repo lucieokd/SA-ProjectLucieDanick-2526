@@ -19,6 +19,8 @@ import SearchResults from "./pages/SearchResults";
 import SearchDetails from "./pages/SearchDetails";
 import Startupscreen from "./pages/Startupscreen";
 import About from "./pages/About";
+import Discover from "./pages/Discover";
+import DiscoverAlbum from "./pages/DiscoverAlbum";
 
 function App() {
   const [theme, setTheme] = useState<string>(() => {
@@ -56,6 +58,8 @@ function App() {
               <Route path="/search" element={<Search />} />
               <Route path="/search-results" element={<SearchResults />} />
               <Route path="/search-details" element={<SearchDetails />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/discover/album" element={<DiscoverAlbum />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/about" element={<About />} />
               <Route path="/upload" element={<UploadSongPage />} />

@@ -70,14 +70,25 @@ export function subscribePlaylists(
     orderBy("createdAt", "desc")
   );
 
-  return onSnapshot(q, (snap) => {
-    const items: Playlist[] = snap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as Omit<Playlist, "id">),
-    }));
+  return onSnapshot(
+    q,
+    (snap) => {
+      if (snap.empty) {
+        console.warn("Firestore snapshot empty – update skipped");
+        return;
+      }
 
-    onUpdate(items);
-  });
+      const items: Playlist[] = snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Playlist, "id">),
+      }));
+
+      onUpdate(items);
+    },
+    (error) => {
+      console.error("Firestore playlist listener error:", error);
+    }
+  );
 }
 
 
