@@ -3,7 +3,10 @@ import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import LoadingSpinner from "../Spotify/LoadingSpinner";
 import Errormessage from "../Spotify/Errormessage";
 import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
-import { fetchPreviewUrl, fetchMetadataByArtist } from "../../API/ITunesSearchServices";
+import {
+  fetchPreviewUrl,
+  fetchMetadataByArtist,
+} from "../../API/ITunesSearchServices";
 import {
   getOrCreateFavorites,
   findPlaylistByName,
@@ -33,12 +36,16 @@ const SongPreview: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const currentTrack = tracks[currentIndex];
   const userId = auth.currentUser?.uid;
 
   // Fetch playlists
- useEffect(() => {
+  useEffect(() => {
     // Guard: alleen subscriben als userId bestaat
     if (!userId) {
       setPlaylists([]);
@@ -68,7 +75,6 @@ const SongPreview: React.FC = () => {
     };
   }, [userId]); // ✅ userId in dependencies
 
-
   // Load initial metadata
   useEffect(() => {
     const loadMetadata = async () => {
@@ -88,7 +94,7 @@ const SongPreview: React.FC = () => {
         }
 
         const unique = Array.from(
-          new Map(results.map((t) => [t.id, t])).values()
+          new Map(results.map((t) => [t.id, t])).values(),
         );
 
         // Shuffle tracks
@@ -114,18 +120,18 @@ const SongPreview: React.FC = () => {
   // Load preview for current track
   const ensurePreviewLoaded = async (index: number) => {
     if (index < 0 || index >= tracks.length) return;
-    
+
     const track = tracks[index];
     if (!track || track.preview_url !== undefined) return;
 
     try {
       const preview = await fetchPreviewUrl(track.id);
       setTracks((prev) =>
-        prev.map((t, i) => (i === index ? { ...t, preview_url: preview } : t))
+        prev.map((t, i) => (i === index ? { ...t, preview_url: preview } : t)),
       );
     } catch {
       setTracks((prev) =>
-        prev.map((t, i) => (i === index ? { ...t, preview_url: null } : t))
+        prev.map((t, i) => (i === index ? { ...t, preview_url: null } : t)),
       );
     }
   };
@@ -183,27 +189,38 @@ const SongPreview: React.FC = () => {
         favPlaylist = { id: newId };
       }
       await addTrackToPlaylist(favPlaylist.id, currentTrack);
-      <LoadingSpinner message="Toegevoegd aan playlist" />
+      showToast("Toegevoegd aan favorieten");
     } catch (err) {
       console.error("Error adding to favorites:", err);
-      <LoadingSpinner message="Fout bij het toevoegen" />
+      showToast("Fout bij toevoegen aan favorieten", "error");
     }
   };
 
   const next = () => {
     if (currentIndex < tracks.length - 1) {
-      setCurrentIndex(i => i + 1);
+      setCurrentIndex((i) => i + 1);
     }
   };
 
   const prev = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(i => i - 1);
+      setCurrentIndex((i) => i - 1);
     }
   };
 
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
+    setToast({ message, type });
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
   useEffect(() => {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       @keyframes slideUp {
         from {
@@ -215,7 +232,7 @@ const SongPreview: React.FC = () => {
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       document.head.removeChild(style);
     };
@@ -223,7 +240,8 @@ const SongPreview: React.FC = () => {
 
   if (loading) return <LoadingSpinner message="Aanbevelingen laden..." />;
   if (error) return <Errormessage error={error} />;
-  if (!tracks.length || !currentTrack) return <Errormessage message="Geen tracks gevonden" />;
+  if (!tracks.length || !currentTrack)
+    return <Errormessage message="Geen tracks gevonden" />;
 
   return (
     <div
@@ -246,11 +264,11 @@ const SongPreview: React.FC = () => {
               onClick={prev}
               disabled={currentIndex === 0}
               style={{
-                marginRight: '15px',
-                color: 'purple'
-              }}  
+                marginRight: "15px",
+                color: "purple",
+              }}
             >
-              <IoChevronBack size={22}  />
+              <IoChevronBack size={22} />
             </button>
 
             <img
@@ -273,9 +291,9 @@ const SongPreview: React.FC = () => {
               onClick={next}
               disabled={currentIndex === tracks.length - 1}
               style={{
-                marginLeft: '15px',
-                color: 'purple'
-              }} 
+                marginLeft: "15px",
+                color: "purple",
+              }}
             >
               <IoChevronForward size={22} />
             </button>
@@ -289,11 +307,13 @@ const SongPreview: React.FC = () => {
             {currentTrack.preview_url ? (
               <button
                 onClick={togglePlay}
-                className={`btn btn-lg px-4 ${isPlaying ? "btn-danger" : "btn-primary"}`}
+                className={`btn btn-lg px-4 ${
+                  isPlaying ? "btn-danger" : "btn-primary"
+                }`}
                 style={{
                   borderRadius: "30px",
-                  backgroundColor: 'purple',
-                  border: 'none'
+                  backgroundColor: "purple",
+                  border: "none",
                 }}
               >
                 {isPlaying ? (
@@ -312,8 +332,8 @@ const SongPreview: React.FC = () => {
               <div className="text-muted small">Preview laden…</div>
             )}
           </div>
-          
-          <div className="d-flex justify-content-center mt-4 gap-3"> 
+
+          <div className="d-flex justify-content-center mt-4 gap-3">
             <button
               onClick={handleFavorite}
               className="btn btn-outline-danger rounded-circle"
@@ -324,7 +344,7 @@ const SongPreview: React.FC = () => {
             </button>
             <button
               className="btn btn-outline-secondary rounded-circle"
-              style={{ width: '50px', height: '50px' }}
+              style={{ width: "50px", height: "50px" }}
               onClick={() => setShowPlaylistModal(true)}
               aria-label="Toevoegen aan playlist"
             >
@@ -380,10 +400,10 @@ const SongPreview: React.FC = () => {
                     try {
                       await addTrackToPlaylist(pl.id, currentTrack);
                       setShowPlaylistModal(false);
-                      alert(`Toegevoegd aan ${pl.name}!`);
+                      showToast(`Toegevoegd aan ${pl.name}`);
                     } catch (error) {
                       console.error("Error adding to playlist:", error);
-                      alert("Kon niet toevoegen aan playlist");
+                      showToast("Kon niet toevoegen aan playlist", "error");
                     }
                   }}
                   onMouseEnter={(e) => {
@@ -405,6 +425,19 @@ const SongPreview: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+      {toast && (
+        <div
+          className="position-fixed bottom-0 start-50 translate-middle-x mb-4 px-4 py-3 shadow"
+          style={{
+            backgroundColor: toast.type === "success" ? "#6c2bd9" : "#dc3545",
+            color: "white",
+            borderRadius: "12px",
+            zIndex: 2000,
+          }}
+        >
+          {toast.message}
         </div>
       )}
     </div>
