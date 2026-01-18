@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   subscribePlaylists,
   Playlist,
-  createPlaylist,
   deletePlaylist,
   renamePlaylist,
 } from "../services/playlistService";
-import { AiOutlineSearch } from "react-icons/ai";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Library.css";
@@ -15,7 +13,6 @@ import AddPopup from "../pages/AddPopup";
 import ModalMenu from "../components/Playlist/ModalMenu";
 import FavouriteArtists from "../components/Playlist/FavouriteArtists";
 import { auth } from "../firebase/firebaseConfig";
-
 
 const Library: React.FC = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -25,8 +22,6 @@ const Library: React.FC = () => {
   const [modalPlaylist, setModalPlaylist] = useState<Playlist | null>(null);
 
   const navigate = useNavigate();
-
-
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -84,7 +79,7 @@ const Library: React.FC = () => {
 
   const handleDelete = async (p: Playlist) => {
     const ok = window.confirm(
-      `Weet je zeker dat je "${p.name}" wilt verwijderen? Dit kan niet ongedaan gemaakt worden.`
+      `Weet je zeker dat je "${p.name}" wilt verwijderen? Dit kan niet ongedaan gemaakt worden.`,
     );
     if (!ok) {
       closeModal();
@@ -100,10 +95,10 @@ const Library: React.FC = () => {
   };
 
   const favorites = playlists.find(
-    (p) => p.name?.toLowerCase() === pinnedName.toLowerCase()
+    (p) => p.name?.toLowerCase() === pinnedName.toLowerCase(),
   );
   const mySongs = playlists.find(
-    (p) => p.name?.toLowerCase() === mySongsName.toLowerCase()
+    (p) => p.name?.toLowerCase() === mySongsName.toLowerCase(),
   );
 
   return (
@@ -185,7 +180,7 @@ const Library: React.FC = () => {
                 .filter(
                   (p) =>
                     p.name?.toLowerCase() !== pinnedName.toLowerCase() &&
-                    p.name?.toLowerCase() !== mySongsName.toLowerCase()
+                    p.name?.toLowerCase() !== mySongsName.toLowerCase(),
                 )
                 .map((p) => (
                   <div key={p.id} className="playlist-card-wrapper">

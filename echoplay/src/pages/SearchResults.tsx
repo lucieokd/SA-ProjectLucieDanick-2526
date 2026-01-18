@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { getToken } from "../API/SpotifyCred";
-import SearchedSong from "../components/Search/SearchedSong";
 import ErrorMessage from "../components/ErrorMessage";
 import Searchbar from "../components/Search/Searchbar";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -38,7 +37,7 @@ const SearchResults: React.FC = () => {
 
         const response = await fetch(
           `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-            query
+            query,
           )}&type=track`,
           {
             method: "GET",
@@ -46,7 +45,7 @@ const SearchResults: React.FC = () => {
               Authorization: "Bearer " + tokenData.access_token,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -79,7 +78,7 @@ const SearchResults: React.FC = () => {
       const tokenData = await getToken();
       const response = await fetch(
         `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-          artistName
+          artistName,
         )}&type=artist`,
         {
           method: "GET",
@@ -87,13 +86,15 @@ const SearchResults: React.FC = () => {
             Authorization: "Bearer " + tokenData.access_token,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.ok) {
         const data = await response.json();
         const artistNameFromSpotify = data.artists.items[0]?.name || artistName;
-        navigate(`/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`);
+        navigate(
+          `/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`,
+        );
       }
     } catch (error) {
       console.error("Fout bij het ophalen van artiestgegevens:", error);
