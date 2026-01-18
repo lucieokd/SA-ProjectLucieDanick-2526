@@ -53,6 +53,8 @@ self.addEventListener("fetch", (event) => {
         if (event.request.destination === "image") {
           return caches.match("/logo.png");
         }
+        return new Response("", { status: 404 });
+
       });
     })
   );

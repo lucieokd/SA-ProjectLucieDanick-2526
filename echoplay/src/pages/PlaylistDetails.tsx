@@ -32,7 +32,7 @@ const PlaylistDetails: React.FC = () => {
   /* -----------------------------
      Realtime playlist updates
   ----------------------------- */
-useEffect(() => {
+  useEffect(() => {
     const userId = auth.currentUser?.uid;
     if (!userId) {
       navigate("/login");
@@ -179,9 +179,10 @@ useEffect(() => {
 
   return (
     <div className="playlist-details-container">
-      <button             
+      <button
         className="btn btn-outline-secondary"
-        onClick={() => navigate(-1)}>
+        onClick={() => navigate(-1)}
+      >
         <i className="bi bi-arrow-left"></i> Terug
       </button>
 
@@ -274,17 +275,15 @@ useEffect(() => {
             </div>
 
             {/* Track 3-dots */}
-            {!isProtected && (
-              <button
-                className="track-menu-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openTrackModal(t);
-                }}
-              >
-                <i className="bi bi-three-dots"></i>
-              </button>
-            )}
+            <button
+              className="track-menu-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                openTrackModal(t);
+              }}
+            >
+              <i className="bi bi-three-dots"></i>
+            </button>
           </div>
         ))}
       </div>

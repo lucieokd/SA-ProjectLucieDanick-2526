@@ -104,7 +104,7 @@ const UploadSongPage: React.FC = () => {
       // Upload cover
       const coverRef = ref(
         storage,
-        `covers/${Date.now()}_${encodeURIComponent(coverFile.name)}`
+        `covers/${Date.now()}_${encodeURIComponent(coverFile.name)}`,
       );
       await uploadBytes(coverRef, coverFile);
       const coverUrl = await getDownloadURL(coverRef);
@@ -112,7 +112,7 @@ const UploadSongPage: React.FC = () => {
       // Upload audio
       const audioRef = ref(
         storage,
-        `songs/${Date.now()}_${encodeURIComponent(audioFile.name)}`
+        `songs/${Date.now()}_${encodeURIComponent(audioFile.name)}`,
       );
       await uploadBytes(audioRef, audioFile);
       const audioUrl = await getDownloadURL(audioRef);
@@ -122,19 +122,16 @@ const UploadSongPage: React.FC = () => {
 
       // 🔹 Track object met expliciete naam en cover
 
-      const track = {
+      const trackToAdd = {
         id: crypto.randomUUID(),
         name: songName,
-        artists: [{ name: "You" }],
+        artist: "You",
+        album: songName, // je kunt hier ook een aparte albumnaam gebruiken
+        artwork: coverUrl,
         preview_url: audioUrl,
-        image: coverUrl,
-        album: {
-          images: [{ url: coverUrl }],
-        },
-        userId: auth.currentUser.uid,
       };
 
-      await addTrackToPlaylist(mySongsId, track);
+      await addTrackToPlaylist(mySongsId, trackToAdd);
 
       setSuccess("Nummer succesvol geüpload");
       setTimeout(() => navigate(`/playlist/${mySongsId}`), 2000);
