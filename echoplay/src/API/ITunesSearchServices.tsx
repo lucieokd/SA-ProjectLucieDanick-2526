@@ -264,7 +264,10 @@ export async function fetchPreviewUrl(trackId: string) {
   return data.results[0]?.previewUrl || null;
 }
 
-export async function fetchTracksFromPlaylist(playlistName: string, artistName: string) {
+export async function fetchTracksFromPlaylist(
+  playlistName: string,
+  artistName: string
+): Promise<Array<{ name: string }>> {
   try {
     const searchTerm = `${playlistName} ${artistName}`;
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=200`;
@@ -303,8 +306,8 @@ export async function fetchTracksFromPlaylist(playlistName: string, artistName: 
     
     // Verwijder duplicates op basis van track naam
     const uniqueTracks = Array.from(
-      new Map(tracks.map((track: any) => [track.name, track])).values()
-    );
+      new Map(tracks.map((track: { name: string }) => [track.name, track])).values()
+    ) as Array<{ name: string }>;
     
     return uniqueTracks;
   } catch (error) {
