@@ -120,20 +120,68 @@ export async function getOrCreateMySongs(userId: string) {
   });
 }
 
-export async function addTrackToPlaylist(playlistId: string, track: any) {
+export async function addTrackToPlaylist(
+  playlistId: string,
+  track: {
+    id: string;
+    name: string;
+    artist: string;
+    album: string;
+    artwork: string | null;
+    preview_url: string | null | undefined;
+  }
+) {
   const playlistRef = doc(db, "playlists", playlistId);
+  const snap = await getDoc(playlistRef);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  // ⚡ Mappen naar Firestore-track formaat
+  const trackToStore = {
+    id: track.id,
+    name: track.name,
+    preview_url: track.preview_url || null,
+    artists: [{ name: track.artist }],
+    album: { images: track.artwork ? [{ url: track.artwork }] : [] },
+  };
+
+  const updates: any = {
+    tracks: arrayUnion(trackToStore),
+  };
+
+  // Stel playlist-cover alleen in als nog niet aanwezig
+  if (!data.imageUrl && track.artwork) {
+    updates.imageUrl = track.artwork;
+  }
+
+  await updateDoc(playlistRef, updates);
+}
+
+
+
+
+export async function removeTrackFromPlaylist(
+  playlistId: string,
+  trackToRemove: any
+) {
+  const playlistRef = doc(db, "playlists", playlistId);
+  const snap = await getDoc(playlistRef);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  const updatedTracks = (data.tracks || []).filter(
+    (t: any) => t.id !== trackToRemove.id
+  );
 
   await updateDoc(playlistRef, {
-    tracks: arrayUnion(track),
+    tracks: updatedTracks,
   });
 }
 
-export async function removeTrackFromPlaylist(playlistId: string, track: any) {
-  const playlistRef = doc(db, "playlists", playlistId);
-  await updateDoc(playlistRef, {
-    tracks: arrayRemove(track),
-  });
-}
 
 export async function renamePlaylist(playlistId: string, newName: string) {
   const playlistRef = doc(db, "playlists", playlistId);
