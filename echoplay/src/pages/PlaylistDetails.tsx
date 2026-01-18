@@ -8,6 +8,8 @@ import {
   renamePlaylist,
 } from "../services/playlistService";
 import "../styles/PlaylistDetails.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import { auth } from "../firebase/firebaseConfig";
 import ModalMenu from "../components/Playlist/ModalMenu";
 
 const PlaylistDetails: React.FC = () => {
@@ -30,8 +32,14 @@ const PlaylistDetails: React.FC = () => {
   /* -----------------------------
      Realtime playlist updates
   ----------------------------- */
-  useEffect(() => {
-    const unsub = subscribePlaylists((items) => setAllPlaylists(items));
+useEffect(() => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      navigate("/login");
+      return;
+    }
+    // CORRECT: Geef userId door als eerste parameter
+    const unsub = subscribePlaylists(userId, (items) => setAllPlaylists(items));
     return () => unsub();
   }, []);
 
@@ -171,9 +179,10 @@ const PlaylistDetails: React.FC = () => {
 
   return (
     <div className="playlist-details-container">
-      {/* Back button */}
-      <button className="btn" onClick={() => navigate(-1)}>
-        &lt;
+      <button             
+        className="btn btn-outline-secondary"
+        onClick={() => navigate(-1)}>
+        <i className="bi bi-arrow-left"></i> Terug
       </button>
 
       {/* Playlist header */}

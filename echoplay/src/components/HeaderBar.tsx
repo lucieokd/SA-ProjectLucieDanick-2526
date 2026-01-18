@@ -9,13 +9,13 @@ const HeaderBar = () => {
   const getPageTitle = () => {
     switch (location.pathname) {
       case "/Home":
-        return "Home";
+        return "Start";
       case "/search":
-        return "Search";
+        return "Zoeken";
       case "/add":
-        return "Add Track";
+        return "Nummer toevoegen";
       case "/library":
-        return "Library";
+        return "Bibliotheek";
       default:
         return "Echoplay";
     }
@@ -51,7 +51,7 @@ const HeaderBar = () => {
             width: "40px",
             height: "40px",
           }}
-          title="Profile"
+          title="Profiel"
           type="submit"
         >
           <AiOutlineUser size={20} />

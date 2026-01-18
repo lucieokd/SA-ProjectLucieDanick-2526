@@ -1,354 +1,335 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { getTracksFromITunes } from "../../API/ITunesSearchServices";
-import { getToken } from "../../API/SpotifyCred";
+import React, { useEffect, useRef, useState } from "react";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import LoadingSpinner from "../Spotify/LoadingSpinner";
 import Errormessage from "../Spotify/Errormessage";
+import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
+import { fetchPreviewUrl, fetchMetadataByArtist } from "../../API/ITunesSearchServices";
 import {
-  createPlaylist,
+  getOrCreateFavorites,
   findPlaylistByName,
   addTrackToPlaylist,
   subscribePlaylists,
   Playlist,
 } from "../../services/playlistService";
-import {
-  getOrCreateFavoritesPlaylist,
-  addSongToPlaylist,
-} from "../../services/playlistSongService";
-import { useFavouriteArtists } from "../../contexts/FavouriteArtistsContext";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { auth } from "../../firebase/firebaseConfig";
 
-interface Track {
+interface TrackMeta {
   id: string;
   name: string;
-  preview_url: string | null;
-  album: { name: string; images: Array<{ url: string }> };
-  artists: Array<{ name: string }>;
+  artist: string;
+  album: string;
+  artwork: string | null;
+  preview_url: string | null | undefined;
 }
 
-const SongPreview = () => {
-  const navigate = useNavigate();
+const SongPreview: React.FC = () => {
   const { favArtists } = useFavouriteArtists();
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [tracks, setTracks] = useState<TrackMeta[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentTrack = tracks[currentIndex];
+  const userId = auth.currentUser?.uid;
 
-  const currentTrack = tracks[currentTrackIndex];
+  // Fetch playlists
+ useEffect(() => {
+    // Guard: alleen subscriben als userId bestaat
+    if (!userId) {
+      setPlaylists([]);
+      return;
+    }
 
+    let unsubscribe: (() => void) | undefined;
+
+    try {
+      unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
+        setPlaylists(fetchedPlaylists);
+      });
+    } catch (err) {
+      console.error("Error subscribing to playlists:", err);
+      setPlaylists([]);
+    }
+
+    // Cleanup functie
+    return () => {
+      if (unsubscribe) {
+        try {
+          unsubscribe();
+        } catch (err) {
+          console.error("Error unsubscribing from playlists:", err);
+        }
+      }
+    };
+  }, [userId]); // ✅ userId in dependencies
+
+
+  // Load initial metadata
   useEffect(() => {
-    const fetchTracks = async () => {
+    const loadMetadata = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Haal favoriete artiest namen op
-        const favoriteArtistNames = favArtists.map(artist => artist.name);
-        
-        // Als er favoriete artiesten zijn, gebruik die, anders gebruik Spotify Top 50
-        const tracksData = await getTracksFromITunes(
-          favoriteArtistNames,
-          150
-        );
-        
-        if (!tracksData || tracksData.length === 0) {
-          setError("Geen tracks gevonden");
-          return;
+
+        const artists = favArtists.length
+          ? favArtists.map((a) => a.name)
+          : ["Taylor Swift", "Drake", "Rihanna"];
+
+        const results: TrackMeta[] = [];
+
+        for (const artist of artists) {
+          const meta = await fetchMetadataByArtist(artist);
+          results.push(...meta);
         }
-        setTracks(tracksData);
-      } catch (err: any) {
-        setError(err.message || "Er is een fout opgetreden");
+
+        const unique = Array.from(
+          new Map(results.map((t) => [t.id, t])).values()
+        );
+
+        // Shuffle tracks
+        for (let i = unique.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [unique[i], unique[j]] = [unique[j], unique[i]];
+        }
+
+        const limitedTracks = unique.slice(0, 150);
+        setTracks(limitedTracks);
+        setCurrentIndex(0);
+      } catch (e: any) {
+        setError("Kon aanbevelingen niet laden");
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
-    fetchTracks();
+
+    loadMetadata();
   }, [favArtists]);
 
-  useEffect(() => {
-    const unsub = subscribePlaylists((items) => setPlaylists(items));
-    return () => unsub();
-  }, []);
+  // Load preview for current track
+  const ensurePreviewLoaded = async (index: number) => {
+    if (index < 0 || index >= tracks.length) return;
+    
+    const track = tracks[index];
+    if (!track || track.preview_url !== undefined) return;
 
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
-      if (tracks[currentTrackIndex]?.preview_url) audioRef.current.load();
+    try {
+      const preview = await fetchPreviewUrl(track.id);
+      setTracks((prev) =>
+        prev.map((t, i) => (i === index ? { ...t, preview_url: preview } : t))
+      );
+    } catch {
+      setTracks((prev) =>
+        prev.map((t, i) => (i === index ? { ...t, preview_url: null } : t))
+      );
     }
-  }, [currentTrackIndex, tracks]);
-
-  // Navigation
-  const goToNextTrack = () => {
-    if (currentTrackIndex < tracks.length - 1)
-      setCurrentTrackIndex((prev) => prev + 1);
-  };
-  const goToPreviousTrack = () => {
-    if (currentTrackIndex > 0) setCurrentTrackIndex((prev) => prev - 1);
   };
 
-  // Playback
-  const togglePlayback = async () => {
+  useEffect(() => {
+    if (!tracks.length) return;
+
+    ensurePreviewLoaded(currentIndex);
+    if (currentIndex + 1 < tracks.length) {
+      ensurePreviewLoaded(currentIndex + 1);
+    }
+  }, [currentIndex, tracks]);
+
+  useEffect(() => {
+    if (!audioRef.current || !currentTrack) return;
+
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    setIsPlaying(false);
+
+    if (currentTrack?.preview_url) {
+      audioRef.current.src = currentTrack.preview_url;
+      audioRef.current.load();
+    }
+  }, [currentTrack]);
+
+  // Toggle play/pause
+  const togglePlay = async () => {
     if (!audioRef.current || !currentTrack?.preview_url) return;
+
     try {
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        if (audioRef.current.readyState === 0) audioRef.current.load();
         await audioRef.current.play();
         setIsPlaying(true);
       }
-    } catch {
+    } catch (error) {
+      console.error("Error playing audio:", error);
       setIsPlaying(false);
-      alert("Kon audio niet afspelen.");
     }
   };
-  const handleAudioEnded = () => setIsPlaying(false);
 
-  // FAVORITE BUTTON
+  // Add to favorites
   const handleFavorite = async () => {
-    const favName = "Favorites";
-    let favPlaylist = await findPlaylistByName(favName);
-    if (!favPlaylist) {
-      const newId = await createPlaylist({
-        name: favName,
-        description: "Your favorite songs",
-        imageFile: null,
-      });
-      favPlaylist = { id: newId } as Playlist;
+    if (!currentTrack) return;
+
+    try {
+      const favName = "Favorites";
+      let favPlaylist = await findPlaylistByName(userId, favName);
+
+      if (!favPlaylist) {
+        const newId = await getOrCreateFavorites(userId);
+        favPlaylist = { id: newId };
+      }
+      await addTrackToPlaylist(favPlaylist.id, currentTrack);
+      <LoadingSpinner message="Toegevoegd aan playlist" />
+    } catch (err) {
+      console.error("Error adding to favorites:", err);
+      <LoadingSpinner message="Fout bij het toevoegen" />
     }
-    await addTrackToPlaylist(favPlaylist.id, currentTrack);
   };
+
+  const next = () => {
+    if (currentIndex < tracks.length - 1) {
+      setCurrentIndex(i => i + 1);
+    }
+  };
+
+  const prev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(i => i - 1);
+    }
+  };
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideUp {
+        from {
+          transform: translate(-50%, 100%);
+        }
+        to {
+          transform: translate(-50%, 0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   if (loading) return <LoadingSpinner message="Aanbevelingen laden..." />;
   if (error) return <Errormessage error={error} />;
-  if (!tracks.length)
-    return <Errormessage message="Geen aanbevelingen gevonden" />;
+  if (!tracks.length || !currentTrack) return <Errormessage message="Geen tracks gevonden" />;
 
   return (
-    <div 
-      className="position-relative w-100 d-flex align-items-center justify-content-center"
+    <div
+      className="d-flex align-items-center justify-content-center"
       style={{
-        minHeight: 'calc(100vh - 56px)',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '2rem 1rem'
+        minHeight: "100vh",
+        padding: "1rem",
       }}
     >
-      {/* Navigation buttons */}
-      <button
-        className="btn btn-light rounded-circle position-absolute d-none d-md-flex align-items-center justify-content-center"
-        style={{
-          left: '2rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '50px',
-          height: '50px',
-          zIndex: 10,
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
-        }}
-        onClick={goToPreviousTrack}
-        disabled={currentTrackIndex === 0}
-      >
-        <IoChevronBack size={24} />
-      </button>
-      <button
-        className="btn btn-light rounded-circle position-absolute d-none d-md-flex align-items-center justify-content-center"
-        style={{
-          right: '2rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '50px',
-          height: '50px',
-          zIndex: 10,
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
-        }}
-        onClick={goToNextTrack}
-        disabled={currentTrackIndex === tracks.length - 1}
-      >
-        <IoChevronForward size={24} />
-      </button>
+      <audio ref={audioRef} />
 
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-10 col-lg-8 col-xl-6">
-            <div className="card shadow-lg border-0" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-              <div className="card-body p-4 p-md-5 text-center">
-                {/* Audio */}
-                {currentTrack.preview_url && (
-                  <audio
-                    key={currentTrack.id}
-                    ref={audioRef}
-                    src={currentTrack.preview_url}
-                    onEnded={handleAudioEnded}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    preload="auto"
-                    crossOrigin="anonymous"
-                  />
+      <div
+        className="card shadow-lg border-0 text-center"
+        style={{ maxWidth: "420px", width: "100%", borderRadius: "20px" }}
+      >
+        <div className="card-body p-4">
+          <div className="d-flex align-items-center justify-content-between mb-4">
+            <button
+              className="btn btn-light rounded-circle shadow-sm"
+              onClick={prev}
+              disabled={currentIndex === 0}
+              style={{
+                marginRight: '15px',
+                color: 'purple'
+              }}  
+            >
+              <IoChevronBack size={22}  />
+            </button>
+
+            <img
+              src={currentTrack.artwork || "/placeholder-artwork.png"}
+              alt={currentTrack.name}
+              className="img-fluid shadow"
+              style={{
+                width: "260px",
+                height: "260px",
+                objectFit: "cover",
+                borderRadius: "16px",
+              }}
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder-artwork.png";
+              }}
+            />
+
+            <button
+              className="btn btn-light rounded-circle shadow-sm"
+              onClick={next}
+              disabled={currentIndex === tracks.length - 1}
+              style={{
+                marginLeft: '15px',
+                color: 'purple'
+              }} 
+            >
+              <IoChevronForward size={22} />
+            </button>
+          </div>
+
+          <h4 className="fw-bold mb-1 text-dark">{currentTrack.name}</h4>
+          <p className="mb-0 text-muted">{currentTrack.artist}</p>
+          <p className="small text-muted">{currentTrack.album}</p>
+
+          <div className="mt-4">
+            {currentTrack.preview_url ? (
+              <button
+                onClick={togglePlay}
+                className={`btn btn-lg px-4 ${isPlaying ? "btn-danger" : "btn-primary"}`}
+                style={{
+                  borderRadius: "30px",
+                  backgroundColor: 'purple',
+                  border: 'none'
+                }}
+              >
+                {isPlaying ? (
+                  <>
+                    <i className="bi bi-pause-fill me-2"></i> Pauzeren
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-play-fill me-2"></i> Afspelen
+                  </>
                 )}
-
-                {/* Cover */}
-                <div className="mb-4">
-                  {currentTrack.album.images.length > 0 ? (
-                    <img
-                      src={currentTrack.album.images[0].url}
-                      alt={currentTrack.album.name}
-                      className="img-fluid rounded shadow"
-                      style={{
-                        width: '100%',
-                        maxWidth: '400px',
-                        height: 'auto',
-                        aspectRatio: '1',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  ) : (
-                    <div 
-                      className="mx-auto d-flex align-items-center justify-content-center rounded shadow"
-                      style={{
-                        width: '100%',
-                        maxWidth: '400px',
-                        aspectRatio: '1',
-                        backgroundColor: 'rgba(108, 43, 217, 0.2)',
-                        color: '#6c2bd9'
-                      }}
-                    >
-                      <i className="bi bi-music-note-beamed" style={{ fontSize: '4rem' }}></i>
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="mb-4">
-                  <h2 className="h3 fw-bold mb-3" style={{ color: '#333' }}>
-                    {currentTrack.name}
-                  </h2>
-                  <p className="h5 mb-2" style={{ color: '#666' }}>
-                    {currentTrack.artists.map((artist, index) => (
-                      <span key={index}>
-                        <span
-                          onClick={async () => {
-                            try {
-                              const tokenData = await getToken();
-                              const response = await fetch(
-                                `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-                                  artist.name
-                                )}&type=artist`,
-                                {
-                                  method: "GET",
-                                  headers: {
-                                    Authorization: "Bearer " + tokenData.access_token,
-                                    "Content-Type": "application/json",
-                                  },
-                                }
-                              );
-                              if (response.ok) {
-                                const data = await response.json();
-                                const artistNameFromSpotify = data.artists.items[0]?.name || artist.name;
-                                navigate(`/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`);
-                              }
-                            } catch (error) {
-                              console.error("Fout bij het ophalen van artiestgegevens:", error);
-                            }
-                          }}
-                          className="text-decoration-none link-primary"
-                          style={{ cursor: 'pointer' }}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              // Trigger click
-                            }
-                          }}
-                        >
-                          {artist.name}
-                        </span>
-                        {index < currentTrack.artists.length - 1 && ", "}
-                      </span>
-                    ))}
-                  </p>
-                  <p className="text-muted mb-0">{currentTrack.album.name}</p>
-                </div>
-
-                {/* Controls */}
-                <div className="mb-4">
-                  {currentTrack.preview_url ? (
-                    <button
-                      onClick={togglePlayback}
-                      className={`btn btn-lg ${isPlaying ? 'btn-danger' : 'btn-primary'} rounded-pill px-5`}
-                      style={{ minWidth: '150px' }}
-                    >
-                      {isPlaying ? (
-                        <>
-                          <i className="bi bi-pause-fill me-2"></i>
-                          Pauze
-                        </>
-                      ) : (
-                        <>
-                          <i className="bi bi-play-fill me-2"></i>
-                          Afspelen
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <p className="text-muted mb-0">Geen preview beschikbaar</p>
-                  )}
-                </div>
-
-                {/* Extra buttons */}
-                <div className="d-flex justify-content-center gap-2">
-                  <button
-                    className="btn btn-outline-danger rounded-circle"
-                    style={{ width: '50px', height: '50px' }}
-                    onClick={handleFavorite}
-                    aria-label="Toevoegen aan favorieten"
-                  >
-                    <i className="bi bi-heart"></i>
-                  </button>
-                  <button
-                    className="btn btn-outline-secondary rounded-circle"
-                    style={{ width: '50px', height: '50px' }}
-                    onClick={() => setShowPlaylistModal(true)}
-                    aria-label="Toevoegen aan playlist"
-                  >
-                    <i className="bi bi-plus-circle"></i>
-                  </button>
-                </div>
-
-                {/* Mobile Navigation */}
-                <div className="d-flex d-md-none justify-content-between align-items-center mt-4 pt-3 border-top">
-                  <button
-                    className="btn btn-outline-primary rounded-circle"
-                    style={{ width: '45px', height: '45px' }}
-                    onClick={goToPreviousTrack}
-                    disabled={currentTrackIndex === 0}
-                  >
-                    <IoChevronBack size={20} />
-                  </button>
-                  <span className="text-muted small">
-                    {currentTrackIndex + 1} / {tracks.length}
-                  </span>
-                  <button
-                    className="btn btn-outline-primary rounded-circle"
-                    style={{ width: '45px', height: '45px' }}
-                    onClick={goToNextTrack}
-                    disabled={currentTrackIndex === tracks.length - 1}
-                  >
-                    <IoChevronForward size={20} />
-                  </button>
-                </div>
-              </div>
-            </div>
+              </button>
+            ) : currentTrack.preview_url === null ? (
+              <div className="text-muted small">Geen preview beschikbaar</div>
+            ) : (
+              <div className="text-muted small">Preview laden…</div>
+            )}
+          </div>
+          
+          <div className="d-flex justify-content-center mt-4 gap-3"> 
+            <button
+              onClick={handleFavorite}
+              className="btn btn-outline-danger rounded-circle"
+              title="Toevoegen aan favorieten"
+              style={{ width: "52px", height: "52px" }}
+            >
+              <i className="bi bi-bookmark-heart"></i>
+            </button>
+            <button
+              className="btn btn-outline-secondary rounded-circle"
+              style={{ width: '50px', height: '50px' }}
+              onClick={() => setShowPlaylistModal(true)}
+              aria-label="Toevoegen aan playlist"
+            >
+              <i className="bi bi-plus-circle"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -396,9 +377,14 @@ const SongPreview = () => {
                     transition: "all 0.2s ease",
                   }}
                   onClick={async () => {
-                    await addTrackToPlaylist(pl.id, currentTrack);
-                    setShowPlaylistModal(false);
-                    alert(`Toegevoegd aan ${pl.name}!`);
+                    try {
+                      await addTrackToPlaylist(pl.id, currentTrack);
+                      setShowPlaylistModal(false);
+                      alert(`Toegevoegd aan ${pl.name}!`);
+                    } catch (error) {
+                      console.error("Error adding to playlist:", error);
+                      alert("Kon niet toevoegen aan playlist");
+                    }
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "#6c2bd9";
@@ -419,21 +405,6 @@ const SongPreview = () => {
               )}
             </div>
           </div>
-
-          <style>
-            {`
-              @keyframes slideUp {
-                from {
-                  transform: translate(-50%, 100%);
-                  opacity: 0;
-                }
-                to {
-                  transform: translate(-50%, 0);
-                  opacity: 1;
-                }
-              }
-            `}
-          </style>
         </div>
       )}
     </div>
