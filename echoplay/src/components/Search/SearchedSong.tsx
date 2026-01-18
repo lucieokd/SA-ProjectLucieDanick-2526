@@ -13,7 +13,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import ErrorMessage from "../ErrorMessage";
 import { auth } from "../../firebase/firebaseConfig";
 
-
 interface Track {
   id: string;
   name: string;
@@ -37,10 +36,9 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
   const userId = auth.currentUser?.uid;
   let [errorText, setErrorText] = useState("");
 
-
   useEffect(() => {
     const unsubscribe = subscribePlaylists(userId, (fetchedPlaylists) => {
-    setPlaylists(fetchedPlaylists);
+      setPlaylists(fetchedPlaylists);
     });
     return () => unsubscribe();
   }, []);
@@ -56,11 +54,14 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
     // Haal preview URL op
     setLoadingPreview(true);
     try {
-      const artistName = track.artists[0]?.name || '';
-      const trackName = track.name || '';
-      const itunesPreviewUrl = await getPreviewUrlFromITunes(trackName, artistName);
+      const artistName = track.artists[0]?.name || "";
+      const trackName = track.name || "";
+      const itunesPreviewUrl = await getPreviewUrlFromITunes(
+        trackName,
+        artistName,
+      );
       setPreviewUrl(itunesPreviewUrl);
-      
+
       if (itunesPreviewUrl) {
         // Start playback direct na het ophalen
         setTimeout(() => togglePlayback(), 100);
@@ -70,7 +71,6 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
     } catch (error) {
       console.error("Error fetching preview:", error);
       setErrorText("Fout bij ophalen preview.");
-
     } finally {
       setLoadingPreview(false);
     }
@@ -99,7 +99,7 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
       const tokenData = await getToken();
       const response = await fetch(
         `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-          artistName
+          artistName,
         )}&type=artist`,
         {
           method: "GET",
@@ -107,13 +107,15 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
             Authorization: "Bearer " + tokenData.access_token,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.ok) {
         const data = await response.json();
         const artistNameFromSpotify = data.artists.items[0]?.name || artistName;
-        navigate(`/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`);
+        navigate(
+          `/Artistinfo?artist=${encodeURIComponent(artistNameFromSpotify)}`,
+        );
       }
     } catch (error) {
       console.error("Fout bij het ophalen van artiestgegevens:", error);
@@ -123,14 +125,23 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
   const handleFavorite = async () => {
     try {
       const favName = "Favorites";
-      let favPlaylist = await findPlaylistByName(userId,favName);
+      let favPlaylist = await findPlaylistByName(userId, favName);
 
       if (!favPlaylist) {
         const newId = await getOrCreateFavorites(userId);
         favPlaylist = { id: newId };
       }
 
-      await addTrackToPlaylist(favPlaylist.id, { ...track, preview_url: previewUrl });
+      const trackToAdd = {
+        id: track.id,
+        name: track.name,
+        artist: track.artists[0]?.name || "Unknown",
+        album: track.album.name,
+        artwork: track.album.images[0]?.url || "",
+        preview_url: previewUrl || "",
+      };
+
+      await addTrackToPlaylist(favPlaylist.id, trackToAdd);
       setErrorText("Toegevoegd aan playlist");
     } catch (err) {
       console.error("Error adding to favorites:", err);
@@ -164,24 +175,22 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
                 src={track.album.images[2]?.url || track.album.images[0]?.url}
                 alt={`Cover van ${track.album.name}`}
                 className="img-thumbnail"
-                style={{ width: '64px', height: '64px', objectFit: 'cover' }}
+                style={{ width: "64px", height: "64px", objectFit: "cover" }}
               />
             )}
             <div className="flex-grow-1">
-              <h5 className="card-title mb-1 fw-semibold">
-                {track.name}
-              </h5>
+              <h5 className="card-title mb-1 fw-semibold">{track.name}</h5>
               <p className="card-text text-muted mb-1 small">
                 {track.artists.map((artist, index) => (
                   <span key={artist.id}>
                     <span
                       onClick={() => handleArtistSearch(artist.name)}
                       className="text-decoration-none link-primary"
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           handleArtistSearch(artist.name);
                         }
@@ -201,13 +210,16 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
             {/* Control buttons */}
             <div className="d-flex gap-2 align-items-center">
               <button
-                className={`btn btn-sm ${isPlaying ? 'btn-primary' : 'btn-outline-primary'}`}
+                className={`btn btn-sm ${isPlaying ? "btn-primary" : "btn-outline-primary"}`}
                 onClick={handlePlayClick}
                 disabled={loadingPreview}
                 aria-label={isPlaying ? "Pauzeren" : "Afspelen"}
               >
                 {loadingPreview ? (
-                  <span className="spinner-border spinner-border-sm" role="status"></span>
+                  <span
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                  ></span>
                 ) : isPlaying ? (
                   <i className="bi bi-pause-fill"></i>
                 ) : (
@@ -231,7 +243,7 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
             </div>
           </div>
         </div>
-        <ErrorMessage text={errorText}/>
+        <ErrorMessage text={errorText} />
       </div>
 
       {/* Playlist Modal */}
@@ -277,7 +289,15 @@ const SearchedSong: React.FC<SearchedSongProps> = ({ track }) => {
                     transition: "all 0.2s ease",
                   }}
                   onClick={async () => {
-                    await addTrackToPlaylist(pl.id, { ...track, preview_url: previewUrl });
+                    const trackToAdd = {
+                      id: track.id,
+                      name: track.name,
+                      artist: track.artists[0]?.name || "Unknown",
+                      album: track.album.name,
+                      artwork: track.album.images[0]?.url || "",
+                      preview_url: previewUrl || "",
+                    };
+                    await addTrackToPlaylist(pl.id, trackToAdd);
                     setShowPlaylistModal(false);
                     alert(`Toegevoegd aan ${pl.name}!`);
                   }}
