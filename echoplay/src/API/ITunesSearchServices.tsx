@@ -226,10 +226,92 @@ export async function fetchMetadataByArtist(artist: string) {
     }));
 }
 
+
+export async function fetchAlbumForArtist(artist: string) {
+  const album = `https://itunes.apple.com/search?term=${encodeURIComponent(
+    `${artist}`
+  )}&media=music&entity=album&limit=20`;
+
+  if (!album) return [];
+
+  const data = await fetch(album);
+  const albumsJson = await data.json();
+
+  if (albumsJson.resultCount === 0) return [];
+  
+  const artistLower = artist.toLowerCase();
+  const albums = albumsJson.results.filter(
+    (r: any) => r.collectionType === "Album" && 
+                r.trackCount > 1 &&
+                r.artistName?.toLowerCase().includes(artistLower)
+  );
+
+  if (albums.length === 0) return [];
+
+  return albums.map((album: any) => ({
+    name: album.collectionName,
+    image: album.artworkUrl100,
+    trackCount: album.trackCount,
+    artistName: album.artistName
+  }));
+}
+
 export async function fetchPreviewUrl(trackId: string) {
   const url = `https://itunes.apple.com/lookup?id=${trackId}`;
   const res = await fetch(url);
   const data = await res.json();
 
   return data.results[0]?.previewUrl || null;
+}
+
+export async function fetchTracksFromPlaylist(
+  playlistName: string,
+  artistName: string
+): Promise<Array<{ name: string }>> {
+  try {
+    const searchTerm = `${playlistName} ${artistName}`;
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=music&entity=song&limit=200`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch from iTunes API');
+    }
+    
+    const data = await response.json();
+    
+    if (!data?.results || data.results.length === 0) {
+      return [];
+    }
+    
+    // Filter tracks die bij het album horen (exacte match op collectionName en artistName)
+    const playlistNameLower = playlistName.toLowerCase();
+    const artistNameLower = artistName.toLowerCase();
+    
+    const tracks = data.results
+      .filter((result: any) => {
+        const resultCollectionName = result.collectionName?.toLowerCase() || '';
+        const resultArtistName = result.artistName?.toLowerCase() || '';
+        
+        return (
+          resultCollectionName.includes(playlistNameLower) || 
+          playlistNameLower.includes(resultCollectionName)
+        ) && (
+          resultArtistName.includes(artistNameLower) || 
+          artistNameLower.includes(resultArtistName)
+        );
+      })
+      .map((result: any) => ({
+        name: result.trackName || 'Unknown Track'
+      }));
+    
+    // Verwijder duplicates op basis van track naam
+    const uniqueTracks = Array.from(
+      new Map(tracks.map((track: { name: string }) => [track.name, track])).values()
+    ) as Array<{ name: string }>;
+    
+    return uniqueTracks;
+  } catch (error) {
+    console.error('Error fetching tracks from playlist:', error);
+    return [];
+  }
 }
