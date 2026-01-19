@@ -147,7 +147,7 @@ export async function addTrackToPlaylist(
 
   const data = snap.data();
 
-  // ⚡ Mappen naar Firestore-track formaat
+  // Mappen naar Firestore-track formaat
   const trackToStore = {
     id: track.id,
     name: track.name,
