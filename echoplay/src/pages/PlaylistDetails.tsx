@@ -26,6 +26,12 @@ const PlaylistDetails: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
 
   const PROTECTED = ["favorites", "my songs"];
 
@@ -107,21 +113,34 @@ const PlaylistDetails: React.FC = () => {
   const closePlaylistModal = () => setActivePlaylistModal(false);
 
   const handleRenamePlaylist = async () => {
-    if (!playlist || PROTECTED.includes(playlist.name.toLowerCase())) return;
+    if (
+      !playlist ||
+      !newPlaylistName.trim() ||
+      PROTECTED.includes(playlist.name.toLowerCase())
+    )
+      return;
 
-    const newName = window.prompt("Nieuwe naam voor playlist:", playlist.name);
-    if (!newName || !newName.trim()) return;
-
-    await renamePlaylist(playlist.id, newName.trim());
-    closePlaylistModal();
+    try {
+      await renamePlaylist(playlist.id, newPlaylistName.trim());
+      showToast("Playlist hernoemd");
+      setShowRenameModal(false);
+      setNewPlaylistName("");
+    } catch {
+      showToast("Hernoemen mislukt", "error");
+    }
   };
 
   const handleDeletePlaylist = async () => {
     if (!playlist) return;
-    if (!window.confirm(`Verwijder playlist "${playlist.name}"?`)) return;
 
-    await deletePlaylist(playlist.id);
-    navigate("/library");
+    try {
+      await deletePlaylist(playlist.id);
+      showToast(`Playlist "${playlist.name}" verwijderd`);
+      navigate("/library");
+    } catch (err) {
+      console.error(err);
+      showToast("Playlist kon niet worden verwijderd", "error");
+    }
   };
 
   if (!playlist) return <p>Playlist laden...</p>;
@@ -175,6 +194,22 @@ const PlaylistDetails: React.FC = () => {
     }
     setPlayingUrl(null);
     setCurrentIndex(null);
+  };
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
+    setToast({ message, type });
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+  const openRenameModal = () => {
+    if (!playlist) return;
+    setNewPlaylistName(playlist.name);
+    setShowRenameModal(true);
+    closePlaylistModal(); // sluit 3-dots menu
   };
 
   return (
@@ -292,7 +327,7 @@ const PlaylistDetails: React.FC = () => {
       <ModalMenu
         show={activePlaylistModal}
         onClose={closePlaylistModal}
-        onRename={handleRenamePlaylist}
+        onRename={openRenameModal}
         onDelete={handleDeletePlaylist}
         disableRename={isProtected}
       />
@@ -303,6 +338,53 @@ const PlaylistDetails: React.FC = () => {
         onClose={closeTrackModal}
         onDelete={handleRemoveTrack} // geen onRename
       />
+      {showRenameModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.3)",
+            backdropFilter: "blur(2px)",
+            zIndex: 1100,
+          }}
+          onClick={() => setShowRenameModal(false)}
+        >
+          <div
+            className="position-fixed top-50 start-50 translate-middle bg-white p-4 shadow"
+            style={{
+              width: "90%",
+              maxWidth: "400px",
+              borderRadius: "16px",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h5 className="fw-semibold mb-3">Playlist hernoemen</h5>
+
+            <input
+              type="text"
+              className="form-control mb-3"
+              value={newPlaylistName}
+              onChange={(e) => setNewPlaylistName(e.target.value)}
+              autoFocus
+            />
+
+            <div className="d-flex justify-content-end gap-2">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setShowRenameModal(false)}
+              >
+                Annuleren
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleRenamePlaylist}
+                disabled={!newPlaylistName.trim()}
+              >
+                Opslaan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
